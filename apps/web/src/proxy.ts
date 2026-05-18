@@ -17,6 +17,7 @@ const PROTECTED_PATHS = [
   "/checkout",
   "/settings",
   "/transactions",
+  "/certificates",
 ];
 
 export function proxy(request: NextRequest) {

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
 
 interface CoursePlayerClientProps {
   course: any;
@@ -86,10 +87,58 @@ export function CoursePlayerClient({
           setProgress((prev: any) => ({ ...prev, [activeLecture.id]: data }));
         }
       }
+
+      // Cek apakah semua materi sudah selesai
+      const current = progress as Record<string, any>;
+      const updatedProgress: Record<string, any> = { ...current, [activeLecture.id]: { ...(current[activeLecture.id] || {}), completed: true } };
+      const allLectures = sections.flatMap((s: any) => s.lectures || []);
+      const allCompleted = allLectures.every((l: any) => updatedProgress[l.id]?.completed);
+
+      if (allCompleted && allLectures.length > 0) {
+        // Generate certificate
+        const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+        const certNumber = "CERT-" + course.id.slice(-6).toUpperCase() + "-" + enrollment.student.slice(-6).toUpperCase() + "-" + Date.now().toString(36).toUpperCase();
+
+        // Cek apakah sudah ada
+        const checkRes = await fetch(
+          pbUrl + "/api/collections/certificates/records?filter=" + encodeURIComponent('student="' + enrollment.student + '" && course="' + course.id + '"') + "&perPage=1",
+          { cache: "no-store" }
+        );
+        const checkData = await checkRes.json();
+
+        if (!checkData.items?.length) {
+          await fetch(pbUrl + "/api/collections/certificates/records", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              student: enrollment.student,
+              course: course.id,
+              enrollment: enrollment.id,
+              certificate_number: certNumber,
+              issued_at: new Date().toISOString(),
+            }),
+          });
+          // Update enrollment progress
+          await fetch(pbUrl + "/api/collections/enrollments/records/" + enrollment.id, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ completed: true, progress: 100, completed_at: new Date().toISOString() }),
+          });
+        }
+      } else {
+        // Update progress biasa
+        const newProgress = Math.round((Object.values(updatedProgress).filter((p: any) => p.completed).length / allLectures.length) * 100);
+        const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+        await fetch(pbUrl + "/api/collections/enrollments/records/" + enrollment.id, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ progress: newProgress }),
+        });
+      }
     } catch (err) {
       console.error("Failed to mark lecture complete:", err);
     }
-  }, [activeLecture, enrollment, progress]);
+  }, [activeLecture, enrollment, progress, sections, course.id]);
 
   const totalLectures = sections.reduce(
     (sum: number, s: any) => sum + (s.lectures?.length || 0),
@@ -100,6 +149,63 @@ export function CoursePlayerClient({
   ).length;
   const overallProgress =
     totalLectures > 0 ? Math.round((completedLectures / totalLectures) * 100) : 0;
+
+  // Notes state
+  const [notes, setNotes] = useState<any[]>([]);
+  const [showNotes, setShowNotes] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const [notesLoading, setNotesLoading] = useState(false);
+
+  const loadNotes = useCallback(async () => {
+    if (!activeLecture || !enrollment) return;
+    setNotesLoading(true);
+    try {
+      const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+      const filter = 'lecture="' + activeLecture.id + '" && student="' + enrollment.student + '"';
+      const res = await fetch(pbUrl + "/api/collections/notes/records?filter=" + encodeURIComponent(filter) + "&sort=-created&perPage=50", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setNotes(data.items || []);
+      }
+    } catch {} finally { setNotesLoading(false); }
+  }, [activeLecture, enrollment]);
+
+  // Load notes when activeLecture changes
+  useEffect(() => { loadNotes(); }, [loadNotes]);
+
+  const handleAddNote = useCallback(async () => {
+    if (!activeLecture || !enrollment || !noteText.trim()) return;
+    try {
+      const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+      const videoEl = document.querySelector("video");
+      const timestamp = videoEl ? Math.floor(videoEl.currentTime) : 0;
+      await fetch(pbUrl + "/api/collections/notes/records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          student: enrollment.student,
+          lecture: activeLecture.id,
+          content: noteText,
+          timestamp,
+        }),
+      });
+      setNoteText("");
+      loadNotes();
+    } catch {}
+  }, [activeLecture, enrollment, noteText, loadNotes]);
+
+  const deleteNote = useCallback(async (noteId: string) => {
+    try {
+      const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+      await fetch(pbUrl + "/api/collections/notes/records/" + noteId, { method: "DELETE" });
+      setNotes((prev) => prev.filter((n: any) => n.id !== noteId));
+    } catch {}
+  }, []);
+
+  const jumpToTimestamp = useCallback((seconds: number) => {
+    const videoEl = document.querySelector("video");
+    if (videoEl) { videoEl.currentTime = seconds; videoEl.play(); }
+  }, []);
 
   const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
 
@@ -306,6 +412,77 @@ export function CoursePlayerClient({
                       Download
                     </a>
                   </div>
+                </div>
+              )}
+
+              {/* Notes Section */}
+              {activeLecture && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowNotes(!showNotes)}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                    </svg>
+                    {showNotes ? "Tutup Catatan" : "Catatan"}
+                  </button>
+
+                  {showNotes && (
+                    <div className="mt-2 rounded-lg border border-gray-800 p-4">
+                      <div className="flex gap-2 mb-3">
+                        <input
+                          type="text"
+                          placeholder="Tulis catatan..."
+                          value={noteText}
+                          onChange={(e) => setNoteText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && noteText.trim()) {
+                              handleAddNote();
+                            }
+                          }}
+                          className="flex-1 rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-indigo-500 focus:ring-indigo-500"
+                        />
+                        <button
+                          onClick={handleAddNote}
+                          disabled={!noteText.trim()}
+                          className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+                        >
+                          Simpan
+                        </button>
+                      </div>
+
+                      {notesLoading ? (
+                        <p className="text-xs text-gray-500">Memuat...</p>
+                      ) : notes.length === 0 ? (
+                        <p className="text-xs text-gray-500">Belum ada catatan untuk materi ini.</p>
+                      ) : (
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {notes.map((note: any) => (
+                            <div key={note.id} className="rounded-lg bg-gray-800 p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm text-gray-300 whitespace-pre-wrap flex-1">{note.content}</p>
+                                {note.timestamp > 0 && (
+                                  <button
+                                    onClick={() => jumpToTimestamp(note.timestamp)}
+                                    className="text-xs text-indigo-400 hover:text-indigo-300 whitespace-nowrap"
+                                  >
+                                    {formatDuration(note.timestamp)}
+                                  </button>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => deleteNote(note.id)}
+                                className="mt-1 text-[10px] text-red-400 hover:text-red-300"
+                              >
+                                Hapus
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

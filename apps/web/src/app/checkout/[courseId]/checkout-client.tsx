@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -9,40 +9,96 @@ interface CheckoutClientProps {
   userId: string;
 }
 
+// Declare Snap global from Midtrans
+declare global {
+  interface Window { snap?: any; }
+}
+
 export function CheckoutClient({ course, userId }: CheckoutClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [couponData, setCouponData] = useState<any>(null);
   const [couponError, setCouponError] = useState("");
+  const [snapReady, setSnapReady] = useState(false);
+
+  // Load Midtrans Snap script
+  useEffect(() => {
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY;
+    if (!clientKey) { setSnapReady(true); return; }
+
+    const script = document.createElement("script");
+    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.setAttribute("data-client-key", clientKey);
+    script.async = true;
+    script.onload = () => setSnapReady(true);
+    document.body.appendChild(script);
+    return () => { document.body.removeChild(script); };
+  }, []);
 
   const price = course.discount_price || course.price;
   const finalPrice = Math.max(0, price - discount);
 
-  async function handleEnrollFree() {
-    if (course.price > 0) return;
-
+  async function handlePay() {
+    if (!finalPrice || finalPrice <= 0) {
+      await handleEnrollFree();
+      return;
+    }
     setLoading(true);
+
     try {
-      const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
-      const res = await fetch(`${pbUrl}/api/collections/enrollments/records`, {
+      const res = await fetch("/api/payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          student: userId,
-          course: course.id,
-          payment_status: "success",
-          progress: 0,
-        }),
+        body: JSON.stringify({ courseId: course.id, couponCode: couponData?.code || "" }),
       });
+      const data = await res.json();
 
-      if (res.ok) {
-        router.push(`/my-learning/${course.id}`);
-        router.refresh();
+      if (!res.ok) {
+        if (data.redirect) { router.push(data.redirect); return; }
+        alert(data.error || "Pembayaran gagal");
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error("Enrollment failed:", err);
-    } finally {
+
+      if (data.redirect) {
+        // Gratis / free
+        router.push(data.redirect);
+        return;
+      }
+
+      // Buka Snap popup
+      if (window.snap && data.snapToken) {
+        window.snap.pay(data.snapToken, {
+          onSuccess: () => { router.push(`/my-learning/${course.id}`); router.refresh(); },
+          onPending: () => { router.push(`/my-learning/${course.id}`); },
+          onError: () => { alert("Pembayaran gagal. Silakan coba lagi."); setLoading(false); },
+          onClose: () => { setLoading(false); },
+        });
+      } else {
+        alert("Snap Midtrans tidak tersedia. Periksa konfigurasi MIDTRANS_CLIENT_KEY.");
+        setLoading(false);
+      }
+    } catch (err: any) {
+      alert(err.message || "Terjadi kesalahan");
+      setLoading(false);
+    }
+  }
+
+  async function handleEnrollFree() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId: course.id }),
+      });
+      const data = await res.json();
+      if (data.redirect) { router.push(data.redirect); router.refresh(); }
+      else { alert("Gagal mendaftar"); setLoading(false); }
+    } catch {
+      alert("Gagal mendaftar");
       setLoading(false);
     }
   }
@@ -59,36 +115,21 @@ export function CheckoutClient({ course, userId }: CheckoutClientProps) {
         )}&perPage=1`,
         { cache: "no-store" }
       );
+      const data = await res.json();
+      const coupon = data.items?.[0];
 
-      if (res.ok) {
-        const data = await res.json();
-        const coupon = data.items?.[0];
-        if (!coupon) {
-          setCouponError("Kupon tidak ditemukan");
-          return;
-        }
-        if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
-          setCouponError("Kupon sudah kadaluarsa");
-          return;
-        }
-        if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
-          setCouponError("Kupon sudah habis digunakan");
-          return;
-        }
-        if (coupon.course && coupon.course !== course.id) {
-          setCouponError("Kupon tidak berlaku untuk kursus ini");
-          return;
-        }
+      if (!coupon) { setCouponError("Kupon tidak ditemukan"); return; }
+      if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) { setCouponError("Kupon sudah kadaluarsa"); return; }
+      if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) { setCouponError("Kupon sudah habis digunakan"); return; }
+      if (coupon.course && coupon.course !== course.id) { setCouponError("Kupon tidak berlaku untuk kursus ini"); return; }
 
-        if (coupon.discount_type === "percentage") {
-          setDiscount(Math.round((price * coupon.discount_value) / 100));
-        } else {
-          setDiscount(coupon.discount_value);
-        }
+      if (coupon.discount_type === "percentage") {
+        setDiscount(Math.round((price * coupon.discount_value) / 100));
+      } else {
+        setDiscount(coupon.discount_value);
       }
-    } catch {
-      setCouponError("Gagal memeriksa kupon");
-    }
+      setCouponData(coupon);
+    } catch { setCouponError("Gagal memeriksa kupon"); }
   }
 
   const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
@@ -177,25 +218,28 @@ export function CheckoutClient({ course, userId }: CheckoutClientProps) {
             </div>
           </div>
 
-          {course.price === 0 ? (
-            <button
-              onClick={handleEnrollFree}
-              disabled={loading}
-              className="mt-4 w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition-colors"
-            >
-              {loading ? "Memproses..." : "Daftar Gratis"}
-            </button>
-          ) : (
-            <button
-              disabled
-              className="mt-4 w-full rounded-lg bg-gray-300 dark:bg-gray-700 px-4 py-2.5 text-sm font-semibold text-gray-500 cursor-not-allowed"
-              title="Integrasi Midtrans akan ditambahkan"
-            >
-              Pembayaran (Segera Hadir)
-            </button>
-          )}
+          <button
+            onClick={handlePay}
+            disabled={loading || (finalPrice > 0 && !snapReady)}
+            className={`mt-4 w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition-colors ${
+              loading || (finalPrice > 0 && !snapReady)
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-500"
+            }`}
+          >
+            {loading
+              ? "Memproses..."
+              : !snapReady && finalPrice > 0
+                ? "Memuat pembayaran..."
+                : finalPrice === 0
+                  ? "Daftar Gratis"
+                  : `Bayar Rp${finalPrice.toLocaleString("id-ID")}`}
+          </button>
 
           <p className="mt-2 text-xs text-gray-500 text-center">
+            Pembayaran diproses oleh <strong>Midtrans</strong> (GoPay, OVO, Bank Transfer, Kartu Kredit)
+          </p>
+          <p className="mt-1 text-xs text-gray-500 text-center">
             Dengan melanjutkan, Anda menyetujui{" "}
             <Link href="/terms" className="text-indigo-600">syarat & ketentuan</Link>
           </p>

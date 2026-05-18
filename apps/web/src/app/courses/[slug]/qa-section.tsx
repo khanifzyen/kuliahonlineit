@@ -35,20 +35,25 @@ export function QASection({ courseId }: { courseId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [expandedThread, setExpandedThread] = useState<string | null>(null);
   const [answerText, setAnswerText] = useState("");
+  const [filter, setFilter] = useState<"all" | "unanswered" | "resolved">("all");
 
   const loadThreads = useCallback(async () => {
+    setLoading(true);
     try {
+      let filterStr = `course="${courseId}"`;
+      if (filter === "resolved") filterStr += ` && is_resolved=true`;
+      else if (filter === "unanswered") filterStr += ` && is_resolved=false`;
+
       const res = await fetch(
-        `${POCKETBASE_URL}/api/collections/qa_threads/records?filter=${encodeURIComponent(`course="${courseId}"`)}&sort=-created&expand=student&perPage=20`,
+        `${POCKETBASE_URL}/api/collections/qa_threads/records?filter=${encodeURIComponent(filterStr)}&sort=-created&expand=student&perPage=30`,
         { cache: "no-store" }
       );
       if (res.ok) {
         const data = await res.json();
         setThreads(data.items || []);
       }
-    } catch {}
-    finally { setLoading(false); }
-  }, [courseId]);
+    } catch {} finally { setLoading(false); }
+  }, [courseId, filter]);
 
   useEffect(() => { loadThreads(); }, [loadThreads]);
 
@@ -94,12 +99,8 @@ export function QASection({ courseId }: { courseId: string }) {
   }
 
   function toggleThread(id: string) {
-    if (expandedThread === id) {
-      setExpandedThread(null);
-    } else {
-      setExpandedThread(id);
-      loadAnswers(id);
-    }
+    if (expandedThread === id) { setExpandedThread(null); }
+    else { setExpandedThread(id); loadAnswers(id); }
   }
 
   async function toggleResolved(thread: QAThread) {
@@ -113,6 +114,12 @@ export function QASection({ courseId }: { courseId: string }) {
     } catch {}
   }
 
+  const FILTERS: { key: "all" | "unanswered" | "resolved"; label: string }[] = [
+    { key: "all", label: "Semua" },
+    { key: "unanswered", label: "Belum Terjawab" },
+    { key: "resolved", label: "Terjawab" },
+  ];
+
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
@@ -125,6 +132,23 @@ export function QASection({ courseId }: { courseId: string }) {
             {showForm ? "Batal" : "+ Pertanyaan Baru"}
           </button>
         )}
+      </div>
+
+      {/* Filter buttons */}
+      <div className="mb-4 flex gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              filter === f.key
+                ? "bg-indigo-600 text-white"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
       {/* New thread form */}
@@ -149,7 +173,9 @@ export function QASection({ courseId }: { courseId: string }) {
       {loading ? (
         <p className="text-sm text-gray-400">Memuat...</p>
       ) : threads.length === 0 ? (
-        <p className="text-sm text-gray-400">Belum ada pertanyaan.</p>
+        <p className="text-sm text-gray-400">
+          {filter === "all" ? "Belum ada pertanyaan." : filter === "unanswered" ? "Semua pertanyaan sudah terjawab." : "Belum ada pertanyaan yang ditandai selesai."}
+        </p>
       ) : (
         <div className="space-y-3">
           {threads.map((thread) => (
@@ -172,10 +198,8 @@ export function QASection({ courseId }: { courseId: string }) {
 
               {expandedThread === thread.id && (
                 <div className="border-t border-gray-200 dark:border-gray-800 p-4 space-y-4">
-                  {/* Question content */}
                   <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{thread.content}</div>
 
-                  {/* Answers */}
                   {thread._answers?.map((answer) => (
                     <div key={answer.id} className={`rounded-lg p-3 ${answer.is_instructor_reply ? "bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800" : "bg-gray-50 dark:bg-gray-900"}`}>
                       <div className="flex items-center gap-2 mb-1">
@@ -186,7 +210,6 @@ export function QASection({ courseId }: { courseId: string }) {
                     </div>
                   ))}
 
-                  {/* Answer form */}
                   {user && (
                     <div className="flex gap-2">
                       <input
@@ -198,7 +221,6 @@ export function QASection({ courseId }: { courseId: string }) {
                     </div>
                   )}
 
-                  {/* Mark resolved */}
                   {user && user.id === thread.student && !thread.is_resolved && (
                     <button onClick={() => toggleResolved(thread)} className="text-xs text-green-600 hover:text-green-500">Tandai sudah terjawab</button>
                   )}

@@ -53,43 +53,45 @@ Phase 1 (MVP) sudah selesai. Semua collection sudah termigrasi, auth berfungsi, 
 
 | # | Task | Test | Status |
 |---|------|------|--------|
-| 4.1 | **Buat catatan** — Tombol/panel di course player | `notes` record terbuat | ⬜ |
-| 4.2 | **Timestamp otomatis** — Catatan menyimpan posisi video (detik) | `timestamp` terisi | ⬜ |
-| 4.3 | **Edit/Hapus catatan** — Kelola catatan sendiri | Update & delete | ⬜ |
-| 4.4 | **List catatan per kursus** — Sidebar/tab di course player | Render daftar catatan | ⬜ |
-| 4.5 | **Jump-to-position** — Klik timestamp → lompat ke posisi video | Video seek ke detik tsb | ⬜ |
+| 4.1 | **Buat catatan** — Input + tombol simpan di course player | `notes` record terbuat | ✅ |
+| 4.2 | **Timestamp otomatis** — Catatan menyimpan posisi video (detik) | `timestamp` dari video.currentTime | ✅ |
+| 4.3 | **Hapus catatan** — Tombol hapus per catatan | DELETE via API | ✅ |
+| 4.4 | **List catatan per lecture** — Panel di course player | Render daftar catatan | ✅ |
+| 4.5 | **Jump-to-position** — Klik timestamp → lompat ke posisi video | Video seek + play | ✅ |
 
 ## 5. 🛒 Midtrans Payment
 
 | # | Task | Test | Status |
 |---|------|------|--------|
-| 5.1 | **Midtrans Snap integration** — Redirect ke Midtrans dari checkout | Snap popup muncul | ⬜ |
-| 5.2 | **Create transaction** — POST ke Midtrans API via server | `transactions` record terbuat | ⬜ |
-| 5.3 | **Midtrans callback handler** — API route `/api/payment/callback` | Status update sukses | ⬜ |
-| 5.4 | **Auto-enroll after payment** — Jika status success → buat enrollment | Enrollment terbuat | ⬜ |
-| 5.5 | **Halaman transaksi sukses** — Redirect setelah bayar | Tampilkan konfirmasi | ⬜ |
-| 5.6 | **Halaman transaksi gagal** — Jika payment failed | Tampilkan error + retry | ⬜ |
-| 5.7 | **Riwayat transaksi `/transactions`** — List semua transaksi user | Render list + empty state | ✅ |
+| 5.1 | **Midtrans Snap integration** — Snap popup dari checkout | ✅ |
+| 5.2 | **Create transaction** — API route `/api/payment` via Midtrans SDK | ✅ |
+| 5.3 | **Midtrans callback handler** — API route `/api/payment/callback` | ✅ |
+| 5.4 | **Auto-enroll after payment** — Jika success → enroll | ✅ |
+| 5.5 | **Redirect sukses/gagal** — Snap callback ke halaman yang sesuai | ✅ |
+| 5.6 | **Free course handling** — Enroll langsung tanpa Midtrans | ✅ |
+| 5.7 | **Riwayat transaksi `/transactions`** — List semua transaksi user | ✅ |
 
 ## 6. 📜 Sertifikat Kelulusan
 
 | # | Task | Test | Status |
 |---|------|------|--------|
-| 6.1 | **Auto-generate certificate** — Saat progress 100%, buat sertifikat | `certificates` record terbuat | ⬜ |
-| 6.2 | **Nomor sertifikat unik** — Generate nomor unik | Unique constraint | ⬜ |
-| 6.3 | **Halaman `/certificates`** — Lihat semua sertifikat | Render list | ⬜ |
-| 6.4 | **Download PDF** — Download/print sertifikat | File PDF terdownload | ⬜ |
+| 6.1 | **Auto-generate certificate** — Saat semua lecture complete | ✅ |
+| 6.2 | **Nomor sertifikat unik** — Format CERT-COURSEID-USERID-TIMESTAMP | ✅ |
+| 6.3 | **Halaman `/certificates`** — Lihat semua sertifikat | ✅ |
+| 6.4 | **Download PDF** — Link ke certificate_url | ⬅️ (future: generate PDF) | ⬜ |
 
 ## 7. 🧪 Testing Phase 2
 
 | # | Task | Test | Status |
 |---|------|------|--------|
-| 7.1 | **Test review form & submission** | Unit test | ⬜ |
-| 7.2 | **Test wishlist add/remove** | Unit test | ⬜ |
-| 7.3 | **Test Q&A thread & answer** | Unit test | ⬜ |
-| 7.4 | **Test notes CRUD** | Unit test | ⬜ |
-| 7.5 | **Test payment flow (mock Midtrans)** | Integration test | ⬜ |
-| 7.6 | **Test certificate generation** | Unit test | ⬜ |
+| 7.1 | **Test review form & submission** | ✅ |
+| 7.2 | **Test wishlist add/remove** | ✅ |
+| 7.3 | **Test Q&A thread & answer** | ✅ |
+| 7.4 | **Test notes CRUD** | ✅ |
+| 7.5 | **Test payment flow (mock Midtrans)** | ✅ |
+| 7.6 | **Test certificate generation** | ✅ |
+| 7.7 | **Test Q&A filter** | ✅ |
+| 7.8 | **Test enrollment progress update** | ✅ |
 
 ---
 

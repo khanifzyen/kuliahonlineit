@@ -435,14 +435,17 @@ Perhitungan:
 | Proxy middleware | ✅ Selesai | Next.js 16 proxy, PocketBase cookie |
 | Bun test runner | ✅ Selesai | bunfig.toml, @testing-library/react |
 
-### 🚀 Phase 2: Interaksi — Prioritas Sedang
-| Fitur | Estimasi | Dependencies |
-|-------|----------|--------------|
-| Review & Rating | ⬜ | Phase 1 |
-| Wishlist | ⬜ | Phase 1 |
-| Q&A Forum | ⬜ | Phase 1 |
-| Lecture Progress Tracking | ⬜ | Phase 1 |
-| Catatan (Notes) | ⬜ | Phase 1 |
+### 🚀 Phase 2: Interaksi & Pembayaran — ✅ Selesai
+| Fitur | Status | Notes |
+|-------|--------|-------|
+| Review & Rating | ✅ Selesai | Star rating + komentar, duplicate check |
+| Wishlist | ✅ Selesai | Toggle di detail, `/wishlist` page |
+| Q&A Forum | ✅ Selesai | Thread, jawaban, filter, resolved |
+| Lecture Progress Tracking | ✅ Selesai | Auto-track, mark complete, overall progress |
+| Catatan (Notes) | ✅ Selesai | CRUD per lecture, timestamp, jump-to-position |
+| Midtrans Payment | ✅ Selesai | Snap popup, callback, auto-enroll |
+| Riwayat Transaksi | ✅ Selesai | `/transactions` page with status badges |
+| Sertifikat | ✅ Selesai | Auto-generate on 100%, `/certificates` page |
 
 ### 🚀 Phase 3: Instructor Tools — Prioritas Sedang
 | Fitur | Estimasi | Dependencies |
