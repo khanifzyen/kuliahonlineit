@@ -58,8 +58,8 @@ const collections: CollectionDef[] = [
   {
     name: "categories",
     type: "base",
-    listRule: "@request.auth.id != ''",
-    viewRule: "@request.auth.id != ''",
+    listRule: "",
+    viewRule: "",
     createRule: "@request.auth.isAdmin = true",
     updateRule: "@request.auth.isAdmin = true",
     deleteRule: "@request.auth.isAdmin = true",
@@ -79,8 +79,8 @@ const collections: CollectionDef[] = [
   {
     name: "courses",
     type: "base",
-    listRule: "@request.auth.id != ''",
-    viewRule: "@request.auth.id != ''",
+    listRule: "status = 'published' || @request.auth.isAdmin = true || (instructor = @request.auth.id)",
+    viewRule: "status = 'published' || @request.auth.isAdmin = true || (instructor = @request.auth.id)",
     createRule: "instructor = @request.auth.id",
     updateRule: "instructor = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "instructor = @request.auth.id || @request.auth.isAdmin = true",
@@ -139,8 +139,8 @@ const collections: CollectionDef[] = [
   {
     name: "sections",
     type: "base",
-    listRule: "@request.auth.id != ''",
-    viewRule: "@request.auth.id != ''",
+    listRule: "",
+    viewRule: "",
     createRule: "course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     updateRule: "course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "course.instructor = @request.auth.id || @request.auth.isAdmin = true",
@@ -167,8 +167,8 @@ const collections: CollectionDef[] = [
   {
     name: "lectures",
     type: "base",
-    listRule: "@request.auth.id != ''",
-    viewRule: "@request.auth.id != ''",
+    listRule: "",
+    viewRule: "",
     createRule: "section.course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     updateRule: "section.course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "section.course.instructor = @request.auth.id || @request.auth.isAdmin = true",
