@@ -612,7 +612,10 @@ function buildFields(
 ): Record<string, any>[] {
   const USER_COLLECTION_ID = "_pb_users_auth_";
 
-  return defs.map((f) => {
+  const fields: Record<string, any>[] = [];
+
+  // Tambahkan field buatan user
+  for (const f of defs) {
     const field: Record<string, any> = {
       name: f.name,
       type: f.type,
@@ -640,8 +643,26 @@ function buildFields(
       if (opts.maxSelect !== undefined) field.maxSelect = opts.maxSelect;
     }
 
-    return field;
+    fields.push(field);
+  }
+
+  // Tambahkan created & updated otomatis (PocketBase timestamp fields)
+  fields.push({
+    name: "created",
+    type: "autodate",
+    required: false,
+    onCreate: true,
+    onUpdate: false,
   });
+  fields.push({
+    name: "updated",
+    type: "autodate",
+    required: false,
+    onCreate: true,
+    onUpdate: true,
+  });
+
+  return fields;
 }
 
 export async function migrateCollections(pb: PocketBase): Promise<void> {
