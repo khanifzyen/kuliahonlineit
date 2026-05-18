@@ -1,21 +1,48 @@
 // ============================================
 // KuliahOnlineIT - Koleksi Database PocketBase
 // ============================================
-// File ini berisi semua koleksi yang akan dibuat/di-migrate
-// ke PocketBase menggunakan Admin API.
+// PocketBase 0.38+ menggunakan "fields" bukan "schema"
+// Setiap field punya properti yang dieksplisitkan
 
 import type PocketBase from "pocketbase";
-import type { CollectionResponse } from "pocketbase";
 
-interface CollectionSchema {
+interface FieldDef {
   name: string;
   type: string;
-  schema: Array<{
-    name: string;
-    type: string;
-    required: boolean;
-    options?: Record<string, unknown>;
-  }>;
+  required?: boolean;
+  // Text options
+  max?: number;
+  min?: number;
+  pattern?: string;
+  // Select options
+  values?: string[];
+  maxSelect?: number;
+  // Relation options
+  collectionId?: string;
+  collectionName?: string;
+  // Number options
+  onlyInt?: boolean;
+  min?: number;
+  max?: number;
+  // File options
+  maxSize?: number;
+  mimeTypes?: string[];
+  thumbs?: string[];
+  // Bool
+  // JSON
+  // Editor
+  // Date
+  // URL
+  // Email
+  // Autodate
+  // Password
+  // Color
+}
+
+interface CollectionDef {
+  name: string;
+  type: "base" | "auth";
+  fields: FieldDef[];
   indexes?: string[];
   listRule?: string | null;
   viewRule?: string | null;
@@ -24,7 +51,7 @@ interface CollectionSchema {
   deleteRule?: string | null;
 }
 
-const collections: CollectionSchema[] = [
+const collections: CollectionDef[] = [
   // ==========================================
   // 1. CATEGORIES - Kategori kursus
   // ==========================================
@@ -36,12 +63,12 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.isAdmin = true",
     updateRule: "@request.auth.isAdmin = true",
     deleteRule: "@request.auth.isAdmin = true",
-    schema: [
+    fields: [
       { name: "name", type: "text", required: true },
       { name: "slug", type: "text", required: true },
-      { name: "description", type: "text", required: false },
-      { name: "icon", type: "text", required: false },
-      { name: "sort_order", type: "number", required: false },
+      { name: "description", type: "text" },
+      { name: "icon", type: "text" },
+      { name: "sort_order", type: "number" },
     ],
     indexes: ["CREATE UNIQUE INDEX idx_categories_slug ON categories (slug)"],
   },
@@ -57,28 +84,46 @@ const collections: CollectionSchema[] = [
     createRule: "instructor = @request.auth.id",
     updateRule: "instructor = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "instructor = @request.auth.id || @request.auth.isAdmin = true",
-    schema: [
+    fields: [
       { name: "title", type: "text", required: true },
       { name: "slug", type: "text", required: true },
-      { name: "subtitle", type: "text", required: false },
-      { name: "description", type: "editor", required: false },
-      { name: "thumbnail", type: "file", required: false },
-      { name: "category", type: "relation", required: false, options: { collectionId: "categories", maxSelect: 1 } },
-      { name: "instructor", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
+      { name: "subtitle", type: "text" },
+      { name: "description", type: "editor" },
+      { name: "thumbnail", type: "file" },
+      {
+        name: "category",
+        type: "relation",
+        options: { collectionId: "categories", maxSelect: 1 } as any,
+      },
+      {
+        name: "instructor",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
       { name: "price", type: "number", required: true },
-      { name: "discount_price", type: "number", required: false },
-      { name: "level", type: "select", required: false, options: { values: ["beginner", "intermediate", "advanced", "all"] } },
-      { name: "language", type: "text", required: false },
-      { name: "duration", type: "number", required: false }, // total menit
-      { name: "status", type: "select", required: true, options: { values: ["draft", "published", "archived"] } },
-      { name: "is_featured", type: "bool", required: false },
-      { name: "total_lectures", type: "number", required: false },
-      { name: "total_students", type: "number", required: false },
-      { name: "average_rating", type: "number", required: false },
-      { name: "tags", type: "json", required: false },
-      { name: "requirements", type: "editor", required: false },
-      { name: "what_you_will_learn", type: "editor", required: false },
-      { name: "target_audience", type: "editor", required: false },
+      { name: "discount_price", type: "number" },
+      {
+        name: "level",
+        type: "select",
+        options: { values: ["beginner", "intermediate", "advanced", "all"], maxSelect: 1 } as any,
+      },
+      { name: "language", type: "text" },
+      { name: "duration", type: "number" },
+      {
+        name: "status",
+        type: "select",
+        required: true,
+        options: { values: ["draft", "published", "archived"], maxSelect: 1 } as any,
+      },
+      { name: "is_featured", type: "bool" },
+      { name: "total_lectures", type: "number" },
+      { name: "total_students", type: "number" },
+      { name: "average_rating", type: "number" },
+      { name: "tags", type: "json" },
+      { name: "requirements", type: "editor" },
+      { name: "what_you_will_learn", type: "editor" },
+      { name: "target_audience", type: "editor" },
     ],
     indexes: [
       "CREATE UNIQUE INDEX idx_courses_slug ON courses (slug)",
@@ -99,11 +144,16 @@ const collections: CollectionSchema[] = [
     createRule: "course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     updateRule: "course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "course.instructor = @request.auth.id || @request.auth.isAdmin = true",
-    schema: [
-      { name: "course", type: "relation", required: true, options: { collectionId: "courses", maxSelect: 1 } },
+    fields: [
+      {
+        name: "course",
+        type: "relation",
+        required: true,
+        options: { collectionId: "courses", maxSelect: 1 } as any,
+      },
       { name: "title", type: "text", required: true },
       { name: "sort_order", type: "number", required: true },
-      { name: "description", type: "text", required: false },
+      { name: "description", type: "text" },
     ],
     indexes: [
       "CREATE INDEX idx_sections_course ON sections (course)",
@@ -122,19 +172,32 @@ const collections: CollectionSchema[] = [
     createRule: "section.course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     updateRule: "section.course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "section.course.instructor = @request.auth.id || @request.auth.isAdmin = true",
-    schema: [
-      { name: "section", type: "relation", required: true, options: { collectionId: "sections", maxSelect: 1 } },
+    fields: [
+      {
+        name: "section",
+        type: "relation",
+        required: true,
+        options: { collectionId: "sections", maxSelect: 1 } as any,
+      },
       { name: "title", type: "text", required: true },
-      { name: "description", type: "editor", required: false },
-      { name: "type", type: "select", required: true, options: { values: ["video", "article", "quiz", "coding_exercise", "resource"] } },
-      { name: "video_url", type: "url", required: false },
-      { name: "video_duration", type: "number", required: false },
-      { name: "video_qualities", type: "json", required: false }, // { "360p": "url", "720p": "url", "1080p": "url" }
-      { name: "article_content", type: "editor", required: false },
-      { name: "resource_file", type: "file", required: false },
-      { name: "is_free_preview", type: "bool", required: false },
+      { name: "description", type: "editor" },
+      {
+        name: "type",
+        type: "select",
+        required: true,
+        options: {
+          values: ["video", "article", "quiz", "coding_exercise", "resource"],
+          maxSelect: 1,
+        } as any,
+      },
+      { name: "video_url", type: "url" },
+      { name: "video_duration", type: "number" },
+      { name: "video_qualities", type: "json" },
+      { name: "article_content", type: "editor" },
+      { name: "resource_file", type: "file" },
+      { name: "is_free_preview", type: "bool" },
       { name: "sort_order", type: "number", required: true },
-      { name: "is_published", type: "bool", required: false },
+      { name: "is_published", type: "bool" },
     ],
     indexes: [
       "CREATE INDEX idx_lectures_section ON lectures (section)",
@@ -153,16 +216,34 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.id != ''",
     updateRule: "@request.auth.id = student",
     deleteRule: "@request.auth.isAdmin = true",
-    schema: [
-      { name: "student", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
-      { name: "course", type: "relation", required: true, options: { collectionId: "courses", maxSelect: 1 } },
-      { name: "progress", type: "number", required: false }, // 0-100 persen
-      { name: "completed", type: "bool", required: false },
-      { name: "completed_at", type: "date", required: false },
-      { name: "payment_status", type: "select", required: true, options: { values: ["pending", "success", "failed", "refunded"] } },
-      { name: "payment_method", type: "text", required: false },
-      { name: "payment_details", type: "json", required: false },
-      { name: "certificate_url", type: "url", required: false },
+    fields: [
+      {
+        name: "student",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
+      {
+        name: "course",
+        type: "relation",
+        required: true,
+        options: { collectionId: "courses", maxSelect: 1 } as any,
+      },
+      { name: "progress", type: "number" },
+      { name: "completed", type: "bool" },
+      { name: "completed_at", type: "date" },
+      {
+        name: "payment_status",
+        type: "select",
+        required: true,
+        options: {
+          values: ["pending", "success", "failed", "refunded"],
+          maxSelect: 1,
+        } as any,
+      },
+      { name: "payment_method", type: "text" },
+      { name: "payment_details", type: "json" },
+      { name: "certificate_url", type: "url" },
     ],
     indexes: [
       "CREATE UNIQUE INDEX idx_enrollments_unique ON enrollments (student, course)",
@@ -182,13 +263,28 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.id = student",
     updateRule: "@request.auth.id = student",
     deleteRule: "@request.auth.isAdmin = true",
-    schema: [
-      { name: "student", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
-      { name: "lecture", type: "relation", required: true, options: { collectionId: "lectures", maxSelect: 1 } },
-      { name: "enrollment", type: "relation", required: true, options: { collectionId: "enrollments", maxSelect: 1 } },
-      { name: "completed", type: "bool", required: false },
-      { name: "watch_time", type: "number", required: false }, // detik yang sudah ditonton
-      { name: "last_position", type: "number", required: false }, // posisi terakhir (detik)
+    fields: [
+      {
+        name: "student",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
+      {
+        name: "lecture",
+        type: "relation",
+        required: true,
+        options: { collectionId: "lectures", maxSelect: 1 } as any,
+      },
+      {
+        name: "enrollment",
+        type: "relation",
+        required: true,
+        options: { collectionId: "enrollments", maxSelect: 1 } as any,
+      },
+      { name: "completed", type: "bool" },
+      { name: "watch_time", type: "number" },
+      { name: "last_position", type: "number" },
     ],
     indexes: [
       "CREATE UNIQUE INDEX idx_lecture_progress_unique ON lecture_progress (student, lecture)",
@@ -207,11 +303,21 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.id != ''",
     updateRule: "student = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "student = @request.auth.id || @request.auth.isAdmin = true",
-    schema: [
-      { name: "course", type: "relation", required: true, options: { collectionId: "courses", maxSelect: 1 } },
-      { name: "student", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
+    fields: [
+      {
+        name: "course",
+        type: "relation",
+        required: true,
+        options: { collectionId: "courses", maxSelect: 1 } as any,
+      },
+      {
+        name: "student",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
       { name: "rating", type: "number", required: true },
-      { name: "comment", type: "editor", required: false },
+      { name: "comment", type: "editor" },
     ],
     indexes: [
       "CREATE UNIQUE INDEX idx_reviews_unique ON reviews (student, course)",
@@ -230,13 +336,21 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.id = student",
     updateRule: "@request.auth.id = student",
     deleteRule: "student = @request.auth.id || @request.auth.isAdmin = true",
-    schema: [
-      { name: "student", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
-      { name: "course", type: "relation", required: true, options: { collectionId: "courses", maxSelect: 1 } },
+    fields: [
+      {
+        name: "student",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
+      {
+        name: "course",
+        type: "relation",
+        required: true,
+        options: { collectionId: "courses", maxSelect: 1 } as any,
+      },
     ],
-    indexes: [
-      "CREATE UNIQUE INDEX idx_wishlists_unique ON wishlists (student, course)",
-    ],
+    indexes: ["CREATE UNIQUE INDEX idx_wishlists_unique ON wishlists (student, course)"],
   },
 
   // ==========================================
@@ -250,17 +364,29 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.id != ''",
     updateRule: "student = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "student = @request.auth.id || @request.auth.isAdmin = true",
-    schema: [
-      { name: "course", type: "relation", required: true, options: { collectionId: "courses", maxSelect: 1 } },
-      { name: "lecture", type: "relation", required: false, options: { collectionId: "lectures", maxSelect: 1 } },
-      { name: "student", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
+    fields: [
+      {
+        name: "course",
+        type: "relation",
+        required: true,
+        options: { collectionId: "courses", maxSelect: 1 } as any,
+      },
+      {
+        name: "lecture",
+        type: "relation",
+        options: { collectionId: "lectures", maxSelect: 1 } as any,
+      },
+      {
+        name: "student",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
       { name: "title", type: "text", required: true },
       { name: "content", type: "editor", required: true },
-      { name: "is_resolved", type: "bool", required: false },
+      { name: "is_resolved", type: "bool" },
     ],
-    indexes: [
-      "CREATE INDEX idx_qa_threads_course ON qa_threads (course)",
-    ],
+    indexes: ["CREATE INDEX idx_qa_threads_course ON qa_threads (course)"],
   },
 
   // ==========================================
@@ -274,15 +400,23 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.id != ''",
     updateRule: "user = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "user = @request.auth.id || @request.auth.isAdmin = true",
-    schema: [
-      { name: "thread", type: "relation", required: true, options: { collectionId: "qa_threads", maxSelect: 1 } },
-      { name: "user", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
+    fields: [
+      {
+        name: "thread",
+        type: "relation",
+        required: true,
+        options: { collectionId: "qa_threads", maxSelect: 1 } as any,
+      },
+      {
+        name: "user",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
       { name: "content", type: "editor", required: true },
-      { name: "is_instructor_reply", type: "bool", required: false },
+      { name: "is_instructor_reply", type: "bool" },
     ],
-    indexes: [
-      "CREATE INDEX idx_qa_answers_thread ON qa_answers (thread)",
-    ],
+    indexes: ["CREATE INDEX idx_qa_answers_thread ON qa_answers (thread)"],
   },
 
   // ==========================================
@@ -296,19 +430,26 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.isAdmin = true || course.instructor = @request.auth.id",
     updateRule: "@request.auth.isAdmin = true || course.instructor = @request.auth.id",
     deleteRule: "@request.auth.isAdmin = true",
-    schema: [
+    fields: [
       { name: "code", type: "text", required: true },
-      { name: "course", type: "relation", required: false, options: { collectionId: "courses", maxSelect: 1 } },
-      { name: "discount_type", type: "select", required: true, options: { values: ["percentage", "fixed"] } },
+      {
+        name: "course",
+        type: "relation",
+        options: { collectionId: "courses", maxSelect: 1 } as any,
+      },
+      {
+        name: "discount_type",
+        type: "select",
+        required: true,
+        options: { values: ["percentage", "fixed"], maxSelect: 1 } as any,
+      },
       { name: "discount_value", type: "number", required: true },
-      { name: "max_uses", type: "number", required: false },
-      { name: "current_uses", type: "number", required: false },
-      { name: "expires_at", type: "date", required: false },
-      { name: "is_active", type: "bool", required: false },
+      { name: "max_uses", type: "number" },
+      { name: "current_uses", type: "number" },
+      { name: "expires_at", type: "date" },
+      { name: "is_active", type: "bool" },
     ],
-    indexes: [
-      "CREATE UNIQUE INDEX idx_coupons_code ON coupons (code)",
-    ],
+    indexes: ["CREATE UNIQUE INDEX idx_coupons_code ON coupons (code)"],
   },
 
   // ==========================================
@@ -322,19 +463,38 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.id != ''",
     updateRule: "@request.auth.isAdmin = true",
     deleteRule: "@request.auth.isAdmin = true",
-    schema: [
-      { name: "student", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
-      { name: "course", type: "relation", required: true, options: { collectionId: "courses", maxSelect: 1 } },
-      { name: "enrollment", type: "relation", required: false, options: { collectionId: "enrollments", maxSelect: 1 } },
+    fields: [
+      {
+        name: "student",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
+      {
+        name: "course",
+        type: "relation",
+        required: true,
+        options: { collectionId: "courses", maxSelect: 1 } as any,
+      },
+      {
+        name: "enrollment",
+        type: "relation",
+        options: { collectionId: "enrollments", maxSelect: 1 } as any,
+      },
       { name: "amount", type: "number", required: true },
-      { name: "fee", type: "number", required: false }, // biaya platform
+      { name: "fee", type: "number" },
       { name: "total", type: "number", required: true },
-      { name: "currency", type: "text", required: false },
-      { name: "payment_method", type: "text", required: false },
-      { name: "midtrans_order_id", type: "text", required: false },
-      { name: "midtrans_transaction_id", type: "text", required: false },
-      { name: "status", type: "select", required: true, options: { values: ["pending", "success", "failed", "refunded"] } },
-      { name: "payment_details", type: "json", required: false },
+      { name: "currency", type: "text" },
+      { name: "payment_method", type: "text" },
+      { name: "midtrans_order_id", type: "text" },
+      { name: "midtrans_transaction_id", type: "text" },
+      {
+        name: "status",
+        type: "select",
+        required: true,
+        options: { values: ["pending", "success", "failed", "refunded"], maxSelect: 1 } as any,
+      },
+      { name: "payment_details", type: "json" },
     ],
     indexes: [
       "CREATE INDEX idx_transactions_student ON transactions (student)",
@@ -354,13 +514,28 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.isAdmin = true",
     updateRule: "@request.auth.isAdmin = true",
     deleteRule: "@request.auth.isAdmin = true",
-    schema: [
-      { name: "student", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
-      { name: "course", type: "relation", required: true, options: { collectionId: "courses", maxSelect: 1 } },
-      { name: "enrollment", type: "relation", required: true, options: { collectionId: "enrollments", maxSelect: 1 } },
+    fields: [
+      {
+        name: "student",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
+      {
+        name: "course",
+        type: "relation",
+        required: true,
+        options: { collectionId: "courses", maxSelect: 1 } as any,
+      },
+      {
+        name: "enrollment",
+        type: "relation",
+        required: true,
+        options: { collectionId: "enrollments", maxSelect: 1 } as any,
+      },
       { name: "certificate_number", type: "text", required: true },
-      { name: "certificate_url", type: "url", required: false },
-      { name: "issued_at", type: "date", required: false },
+      { name: "certificate_url", type: "url" },
+      { name: "issued_at", type: "date" },
     ],
     indexes: [
       "CREATE UNIQUE INDEX idx_certificates_unique ON certificates (student, course)",
@@ -379,11 +554,21 @@ const collections: CollectionSchema[] = [
     createRule: "@request.auth.id = student",
     updateRule: "@request.auth.id = student",
     deleteRule: "student = @request.auth.id",
-    schema: [
-      { name: "student", type: "relation", required: true, options: { collectionId: "users", maxSelect: 1 } },
-      { name: "lecture", type: "relation", required: true, options: { collectionId: "lectures", maxSelect: 1 } },
+    fields: [
+      {
+        name: "student",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
+      {
+        name: "lecture",
+        type: "relation",
+        required: true,
+        options: { collectionId: "lectures", maxSelect: 1 } as any,
+      },
       { name: "content", type: "editor", required: true },
-      { name: "timestamp", type: "number", required: false }, // timestamp video (detik)
+      { name: "timestamp", type: "number" },
     ],
     indexes: [
       "CREATE INDEX idx_notes_student ON notes (student)",
@@ -402,57 +587,110 @@ const collections: CollectionSchema[] = [
     createRule: "course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     updateRule: "course.instructor = @request.auth.id || @request.auth.isAdmin = true",
     deleteRule: "course.instructor = @request.auth.id || @request.auth.isAdmin = true",
-    schema: [
-      { name: "course", type: "relation", required: true, options: { collectionId: "courses", maxSelect: 1 } },
+    fields: [
+      {
+        name: "course",
+        type: "relation",
+        required: true,
+        options: { collectionId: "courses", maxSelect: 1 } as any,
+      },
       { name: "title", type: "text", required: true },
       { name: "content", type: "editor", required: true },
     ],
-    indexes: [
-      "CREATE INDEX idx_announcements_course ON announcements (course)",
-    ],
+    indexes: ["CREATE INDEX idx_announcements_course ON announcements (course)"],
   },
 ];
+
+/**
+ * Convert our simplified field definitions into the PocketBase 0.38+ fields format.
+ * Options are flattened at the top level for each field.
+ * Relation collectionId is resolved from name to actual ID.
+ */
+function buildFields(
+  defs: FieldDef[],
+  collectionNameToId: Record<string, string>,
+): Record<string, any>[] {
+  const USER_COLLECTION_ID = "_pb_users_auth_";
+
+  return defs.map((f) => {
+    const field: Record<string, any> = {
+      name: f.name,
+      type: f.type,
+      required: f.required ?? false,
+    };
+
+    // Handle relation fields: resolve collectionId from name
+    if (f.type === "relation") {
+      const opts = (f as any).options || {};
+      const collName = opts.collectionId || "";
+      if (collName === "users") {
+        field.collectionId = USER_COLLECTION_ID;
+      } else if (collName) {
+        field.collectionId = collectionNameToId[collName] || collName;
+      }
+      if (opts.maxSelect !== undefined) {
+        field.maxSelect = opts.maxSelect;
+      }
+    }
+
+    // Handle select fields
+    if (f.type === "select") {
+      const opts = (f as any).options || {};
+      if (opts.values) field.values = opts.values;
+      if (opts.maxSelect !== undefined) field.maxSelect = opts.maxSelect;
+    }
+
+    return field;
+  });
+}
 
 export async function migrateCollections(pb: PocketBase): Promise<void> {
   console.log("\n📦 Migrating collections...");
 
   const existingCollections = await pb.collections.getFullList();
 
+  // Build a name -> id mapping for all existing collections
+  const collectionNameToId: Record<string, string> = {};
+  for (const c of existingCollections as any[]) {
+    collectionNameToId[c.name] = c.id;
+  }
+  // Ensure users is known (built-in auth collection)
+  collectionNameToId["users"] = "_pb_users_auth_";
+
+  // We need to create collections in dependency order:
+  // categories, courses, sections, lectures, enrollments, lecture_progress,
+  // reviews, wishlists, qa_threads, qa_answers, coupons, transactions,
+  // certificates, notes, announcements
+  //
+  // After each collection is created, update the name-to-id map
+  // so subsequent relation fields can reference it properly.
+
   for (const col of collections) {
-    const existing = existingCollections.find((c) => c.name === col.name);
-    const schema = col.schema.map((s) => ({
-      name: s.name,
-      type: s.type,
-      required: s.required,
-      options: s.options || {},
-    }));
+    const existing = existingCollections.find((c: any) => c.name === col.name);
+    const fields = buildFields(col.fields, collectionNameToId);
+
+    const payload: Record<string, any> = {
+      name: col.name,
+      type: col.type,
+      fields,
+      indexes: col.indexes || [],
+      listRule: col.listRule,
+      viewRule: col.viewRule,
+      createRule: col.createRule,
+      updateRule: col.updateRule,
+      deleteRule: col.deleteRule,
+    };
 
     if (existing) {
       console.log(`  🔄 Updating collection: ${col.name}`);
-      await pb.collections.update(existing.id, {
-        name: col.name,
-        type: col.type,
-        schema,
-        indexes: col.indexes || [],
-        listRule: col.listRule ?? null,
-        viewRule: col.viewRule ?? null,
-        createRule: col.createRule ?? null,
-        updateRule: col.updateRule ?? null,
-        deleteRule: col.deleteRule ?? null,
-      } as any);
+      await pb.collections.update(existing.id, payload);
+      // Update the map with the actual id
+      collectionNameToId[col.name] = existing.id;
     } else {
       console.log(`  ➕ Creating collection: ${col.name}`);
-      await pb.collections.create({
-        name: col.name,
-        type: col.type,
-        schema,
-        indexes: col.indexes || [],
-        listRule: col.listRule ?? null,
-        viewRule: col.viewRule ?? null,
-        createRule: col.createRule ?? null,
-        updateRule: col.updateRule ?? null,
-        deleteRule: col.deleteRule ?? null,
-      } as any);
+      const result = await pb.collections.create(payload);
+      // Update the map with the newly created collection id
+      collectionNameToId[col.name] = (result as any).id;
     }
   }
 

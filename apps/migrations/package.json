@@ -8,8 +8,8 @@
     "dev": "bun --watch src/index.ts"
   },
   "dependencies": {
-    "pocketbase": "^0.25.0",
-    "dotenv": "^16.4.0"
+    "dotenv": "^16.4.0",
+    "pocketbase": "^0.26.9"
   },
   "devDependencies": {
     "@types/node": "^20",

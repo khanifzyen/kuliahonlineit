@@ -11,6 +11,7 @@ bun.lock
 # PocketBase data
 pocketbase/data/
 pocketbase/public/
+pocketbase/migrations/
 
 # Build
 dist/
