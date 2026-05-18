@@ -6,9 +6,8 @@ describe("PocketBase Utility", () => {
     expect(process.env.POCKETBASE_URL).toBe("http://localhost:8090");
   });
 
-  it("should create a PocketBase instance with correct URL", () => {
-    // Dynamic import to avoid module-level side effects
-    const { getPocketBase } = require("@/lib/pocketbase");
+  it("should create a PocketBase instance with correct URL", async () => {
+    const { getPocketBase } = await import("@/lib/pocketbase");
     const pb = getPocketBase();
     expect(pb).toBeDefined();
     expect((pb as any).baseURL).toBe("http://localhost:8090");

@@ -48,10 +48,17 @@ export const authOptions: AuthOptions = {
               ? `${POCKETBASE_URL}/api/files/users/${user.id}/${user.avatar}`
               : null,
             pocketbaseToken: authData.token,
-          } as any;
-        } catch (error: any) {
-          console.error("Auth error:", error.message);
-          throw new Error(error.message || "Email atau password salah");
+          } as {
+            id: string;
+            email: string;
+            name: string;
+            image: string | null;
+            pocketbaseToken: string;
+          };
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : "Email atau password salah";
+          console.error("Auth error:", message);
+          throw new Error(message);
         }
       },
     }),
@@ -93,15 +100,7 @@ export const authOptions: AuthOptions = {
         if (account.provider !== "credentials") {
           try {
             const pb = new PocketBase(POCKETBASE_URL);
-            const oauthData = {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              email: user.email,
-              name: user.name,
-              avatar: user.image,
-            };
-
-            // Cek apakah user sudah ada di PocketBase
+              // Cek apakah user sudah ada di PocketBase
             const existingUsers = await pb
               .collection("users")
               .getList(1, 1, {
@@ -132,9 +131,10 @@ export const authOptions: AuthOptions = {
 
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id || token.sub;
-        (session.user as any).pocketbaseToken = token.pocketbaseToken;
-        (session.user as any).pocketbaseId = token.pocketbaseId;
+        const user = session.user as Record<string, unknown>;
+        user.id = token.id || token.sub;
+        user.pocketbaseToken = token.pocketbaseToken;
+        user.pocketbaseId = token.pocketbaseId;
       }
       return session;
     },
