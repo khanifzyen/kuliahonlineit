@@ -59,18 +59,13 @@ export default async function CertificatesPage() {
                       </div>
                     </div>
 
-                    {cert.certificate_url ? (
-                      <a
-                        href={cert.certificate_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"
-                      >
-                        Lihat Sertifikat
-                      </a>
-                    ) : (
-                      <span className="text-xs text-gray-400">PDF belum tersedia</span>
-                    )}
+                    <a
+                      href={"/api/certificate/" + cert.id}
+                      target="_blank"
+                      className="flex-shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"
+                    >
+                      Lihat & Cetak Sertifikat
+                    </a>
                   </div>
                 </div>
               );

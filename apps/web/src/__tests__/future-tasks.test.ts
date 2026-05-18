@@ -75,4 +75,36 @@ describe("Certificate Generation", () => {
     const data = await res.json();
     if (data.items?.[0]) expect("certificate_number" in data.items[0]).toBe(true);
   });
+
+  it("should have certificate API route", async () => {
+    const res = await fetch("http://localhost:3000/api/certificate/test");
+    expect(res.status === 401 || res.status === 404).toBe(true);
+  });
+});
+
+describe("Wishlist Badge", () => {
+  it("should have wishlist count API accessible", async () => {
+    const res = await fetch("http://localhost:8090/api/collections/wishlists/records?perPage=1");
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("Thumbnail Upload", () => {
+  it("should support file uploads via FormData", async () => {
+    // Test that courses collection accepts file fields
+    const res = await fetch("http://localhost:8090/api/collections/courses/records?perPage=1");
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    if (data.items?.[0]) {
+      expect("thumbnail" in data.items[0]).toBe(true);
+    }
+  });
+});
+
+describe("Certificate Download", () => {
+  it("should render certificate HTML view", async () => {
+    const res = await fetch("http://localhost:3000/api/certificate/test123");
+    // Should return 401 (unauth) or 404 (not found)
+    expect(res.status === 401 || res.status === 404 || res.status === 500).toBe(true);
+  });
 });

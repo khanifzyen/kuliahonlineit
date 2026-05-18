@@ -19,6 +19,15 @@ export default function NewCoursePage() {
     what_you_will_learn: "", requirements: "", target_audience: "",
     status: "draft", is_featured: false,
   });
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+
+  function handleThumbnailUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+  }
 
   useEffect(() => {
     fetch(`${PB}/api/collections/categories/records?sort=sort_order&perPage=20`, { cache: "no-store" })
@@ -39,19 +48,31 @@ export default function NewCoursePage() {
     setSaving(true);
     try {
       const slug = form.slug || generateSlug(form.title);
+
+      // Use FormData for file upload
+      const body = new FormData();
+      body.append("title", form.title);
+      body.append("slug", slug);
+      body.append("subtitle", form.subtitle || "");
+      body.append("description", form.description || "");
+      body.append("category", form.category || "");
+      body.append("price", String(Number(form.price) || 0));
+      body.append("discount_price", String(Number(form.discount_price) || 0));
+      body.append("level", form.level);
+      body.append("language", form.language);
+      body.append("status", form.status);
+      body.append("is_featured", "false");
+      body.append("total_lectures", "0");
+      body.append("total_students", "0");
+      body.append("average_rating", "0");
+      if (form.what_you_will_learn) body.append("what_you_will_learn", form.what_you_will_learn);
+      if (form.requirements) body.append("requirements", form.requirements);
+      if (form.target_audience) body.append("target_audience", form.target_audience);
+      if (thumbnailFile) body.append("thumbnail", thumbnailFile);
+
       const res = await fetch(`${PB}/api/collections/courses/records`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          slug,
-          price: Number(form.price) || 0,
-          discount_price: Number(form.discount_price) || 0,
-          category: form.category || null,
-          total_lectures: 0,
-          total_students: 0,
-          average_rating: 0,
-        }),
+        body,
       });
 
       if (!res.ok) {
@@ -98,8 +119,9 @@ export default function NewCoursePage() {
           <Field label="Deskripsi">
             <textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi lengkap kursus..." className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm" />
           </Field>
-          <Field label="Thumbnail (upload via PocketBase admin UI)">
-            <p className="text-xs text-gray-400">Untuk upload thumbnail, gunakan PocketBase admin panel di <a href="http://localhost:8090/_/" target="_blank" className="text-indigo-500">http://localhost:8090/_/</a></p>
+          <Field label="Thumbnail">
+            <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-300" />
+            {thumbnailPreview && <img src={thumbnailPreview} alt="Preview" className="mt-2 h-24 w-40 object-cover rounded-lg border" />}
           </Field>
         </Section>
 

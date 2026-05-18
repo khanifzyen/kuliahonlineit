@@ -43,9 +43,19 @@ export default function EditCoursePage() {
         target_audience: course.target_audience || "",
       });
       setOriginal(course);
+
+      // Set thumbnail preview if exists
+      if (course.thumbnail) {
+        const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+        setThumbnailPreview(pbUrl + "/api/files/courses/" + course.id + "/" + course.thumbnail);
+      }
+
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [courseId]);
+
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,15 +64,16 @@ export default function EditCoursePage() {
 
     setSaving(true);
     try {
+      // Use FormData to support file upload
+      const body = new FormData();
+      Object.entries(form).forEach(([key, val]) => {
+        if (val !== null && val !== undefined) body.append(key, String(val));
+      });
+      if (thumbnailFile) body.append("thumbnail", thumbnailFile);
+
       const res = await fetch(`${PB}/api/collections/courses/records/${courseId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          price: Number(form.price) || 0,
-          discount_price: Number(form.discount_price) || 0,
-          category: form.category || null,
-        }),
+        body,
       });
 
       if (!res.ok) {
@@ -119,6 +130,13 @@ export default function EditCoursePage() {
           </Field>
           <Field label="Deskripsi">
             <textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm" />
+          </Field>
+          <Field label="Thumbnail">
+            <input type="file" accept="image/*" onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) { setThumbnailFile(file); setThumbnailPreview(URL.createObjectURL(file)); }
+            }} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-300" />
+            {thumbnailPreview && <img src={thumbnailPreview} alt="Preview" className="mt-2 h-24 w-40 object-cover rounded-lg border" />}
           </Field>
         </Section>
 

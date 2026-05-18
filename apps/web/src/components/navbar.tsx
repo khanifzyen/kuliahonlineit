@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/use-notifications";
-import { useWishlist } from "@/lib/use-wishlist";
 import type { ServerUser } from "@/lib/auth-server";
 import Link from "next/link";
 
@@ -50,12 +49,7 @@ export function Navbar({ user: serverUser }: NavbarProps) {
               >
                 My Learning
               </Link>
-              <Link
-                href="/wishlist"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-              >
-                Wishlist
-              </Link>
+              <WishlistBadge />
 
               {/* Notifications */}
               <NotificationBell />
@@ -169,6 +163,7 @@ export function Navbar({ user: serverUser }: NavbarProps) {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Wishlist
+                  Wishlist
                 </Link>
                 <Link
                   href="/settings/profile"
@@ -214,6 +209,31 @@ export function Navbar({ user: serverUser }: NavbarProps) {
         </div>
       )}
     </nav>
+  );
+}
+
+function WishlistBadge() {
+  const { user } = useAuth();
+  const [count, setCount] = useState(0);
+  const PB = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+
+  useEffect(() => {
+    if (!user) return;
+    fetch(PB + "/api/collections/wishlists/records?filter=" + encodeURIComponent('student="' + user.id + '"') + "&perPage=1&skipTotal=1", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => setCount(d.totalItems || 0))
+      .catch(() => {});
+  }, [user]);
+
+  return (
+    <Link href="/wishlist" className="relative text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+      Wishlist
+      {count > 0 && (
+        <span className="absolute -top-2 -right-4 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
+    </Link>
   );
 }
 
