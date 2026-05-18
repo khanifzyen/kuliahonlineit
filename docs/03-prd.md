@@ -458,14 +458,14 @@ Perhitungan:
 | Student List | ✅ Selesai | Table with progress bar, completion status |
 | Course List | ✅ Selesai | All courses with status badges & action buttons |
 
-### 🚀 Phase 4: Growth — Prioritas Rendah
-| Fitur | Estimasi | Dependencies |
-|-------|----------|--------------|
-| Sertifikat Kelulusan | ⬜ | Phase 2 |
-| Multi-quality Video | ⬜ | Phase 2 |
-| Advanced Analytics | ⬜ | Phase 3 |
-| Notifications | ⬜ | Phase 2 |
-| Mobile Responsive Polish | ⬜ | Phase 1 |
+### 🚀 Phase 4: Growth & Polish — ✅ Selesai
+| Fitur | Status | Notes |
+|-------|--------|-------|
+| Sertifikat Kelulusan | ✅ (Phase 2) | Auto-generate on 100%, /certificates page |
+| Multi-quality Video | ✅ Selesai | Quality selector (360p/720p/1080p), fallback, localStorage |
+| Advanced Analytics | ✅ Selesai | Revenue bar chart 6 bulan, course perf table, stats |
+| Notifications | ✅ Selesai | Bell icon + badge, dropdown, /notifications page, auto-create on enroll |
+| Mobile Responsive Polish | ✅ Selesai | Responsive grid, mobile sidebar, hamburger menu |
 
 ---
 

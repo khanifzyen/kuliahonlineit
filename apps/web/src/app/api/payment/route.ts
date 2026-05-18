@@ -110,6 +110,20 @@ export async function POST(req: Request) {
         }),
       });
 
+      // Notification
+      await fetch(`${POCKETBASE_URL}/api/collections/notifications/records`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user: user.id,
+          type: "enroll",
+          title: "Pendaftaran kursus berhasil",
+          message: `Anda berhasil mendaftar kursus "${course.title || courseId}". Selamat belajar!`,
+          link: `/my-learning/${courseId}`,
+          is_read: false,
+        }),
+      });
+
       return NextResponse.json({ redirect: `/my-learning/${courseId}` });
     }
 

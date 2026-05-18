@@ -599,6 +599,37 @@ const collections: CollectionDef[] = [
     ],
     indexes: ["CREATE INDEX idx_announcements_course ON announcements (course)"],
   },
+
+  // ==========================================
+  // 16. NOTIFICATIONS - Notifikasi in-app
+  // ==========================================
+  {
+    name: "notifications",
+    type: "base",
+    listRule: "user = @request.auth.id || @request.auth.isAdmin = true",
+    viewRule: "user = @request.auth.id || @request.auth.isAdmin = true",
+    createRule: "@request.auth.id != ''",
+    updateRule: "user = @request.auth.id || @request.auth.isAdmin = true",
+    deleteRule: "@request.auth.isAdmin = true",
+    fields: [
+      {
+        name: "user",
+        type: "relation",
+        required: true,
+        options: { collectionId: "users", maxSelect: 1 } as any,
+      },
+      { name: "type", type: "text", required: true },
+      { name: "title", type: "text", required: true },
+      { name: "message", type: "text" },
+      { name: "link", type: "text" },
+      { name: "is_read", type: "bool" },
+      { name: "data", type: "json" },
+    ],
+    indexes: [
+      "CREATE INDEX idx_notifications_user ON notifications (user)",
+      "CREATE INDEX idx_notifications_read ON notifications (user, is_read)",
+    ],
+  },
 ];
 
 /**

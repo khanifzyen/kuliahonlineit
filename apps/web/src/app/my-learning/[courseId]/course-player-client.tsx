@@ -150,6 +150,40 @@ export function CoursePlayerClient({
   const overallProgress =
     totalLectures > 0 ? Math.round((completedLectures / totalLectures) * 100) : 0;
 
+  // Multi-quality video
+  const [selectedQuality, setSelectedQuality] = useState<string>("");
+
+  useEffect(() => {
+    if (activeLecture?.video_qualities) {
+      const saved = localStorage.getItem("preferred_quality");
+      const qualities = typeof activeLecture.video_qualities === "string"
+        ? JSON.parse(activeLecture.video_qualities)
+        : activeLecture.video_qualities;
+      if (saved && qualities[saved]) setSelectedQuality(saved);
+      else {
+        // Default to highest quality available
+        const order = ["1080p", "720p", "360p"];
+        for (const q of order) { if (qualities[q]) { setSelectedQuality(q); break; } }
+      }
+    }
+  }, [activeLecture]);
+
+  function getVideoSrc(): string {
+    if (!activeLecture) return "";
+    if (selectedQuality && activeLecture.video_qualities) {
+      const qualities = typeof activeLecture.video_qualities === "string"
+        ? JSON.parse(activeLecture.video_qualities)
+        : activeLecture.video_qualities;
+      if (qualities[selectedQuality]) return qualities[selectedQuality];
+    }
+    return activeLecture.video_url || "";
+  }
+
+  function changeQuality(q: string) {
+    setSelectedQuality(q);
+    localStorage.setItem("preferred_quality", q);
+  }
+
   // Notes state
   const [notes, setNotes] = useState<any[]>([]);
   const [showNotes, setShowNotes] = useState(false);
@@ -346,13 +380,36 @@ export function CoursePlayerClient({
               {activeLecture.type === "video" ? (
                 <div className="aspect-video bg-black rounded-lg overflow-hidden">
                   {activeLecture.video_url ? (
-                    <video
-                      ref={videoRef}
-                      src={activeLecture.video_url}
-                      controls
-                      className="h-full w-full"
-                      autoPlay
-                    />
+                    <div className="relative">
+                      <video
+                        ref={videoRef}
+                        src={getVideoSrc()}
+                        controls
+                        className="h-full w-full"
+                        autoPlay
+                      />
+                      {activeLecture.video_qualities && (
+                        <div className="absolute bottom-12 right-2 flex gap-1">
+                          {Object.keys(
+                            typeof activeLecture.video_qualities === "string"
+                              ? JSON.parse(activeLecture.video_qualities)
+                              : activeLecture.video_qualities
+                          ).map((q) => (
+                            <button
+                              key={q}
+                              onClick={() => changeQuality(q)}
+                              className={`text-xs px-2 py-1 rounded font-medium transition-colors ${
+                                selectedQuality === q
+                                  ? "bg-indigo-600 text-white"
+                                  : "bg-black/60 text-white hover:bg-black/80"
+                              }`}
+                            >
+                              {q}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="flex h-full items-center justify-center text-gray-500">
                       <div className="text-center">

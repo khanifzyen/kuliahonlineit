@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useNotifications } from "@/lib/use-notifications";
 import type { ServerUser } from "@/lib/auth-server";
 import Link from "next/link";
 
@@ -54,6 +55,9 @@ export function Navbar({ user: serverUser }: NavbarProps) {
               >
                 Wishlist
               </Link>
+
+              {/* Notifications */}
+              <NotificationBell />
 
               {/* Profile dropdown */}
               <div className="relative group">
@@ -209,5 +213,68 @@ export function Navbar({ user: serverUser }: NavbarProps) {
         </div>
       )}
     </nav>
+  );
+}
+
+function NotificationBell() {
+  const { user } = useAuth();
+  const { unreadCount, recentUnread, markAsRead } = useNotifications();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  if (!user) return null;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="relative p-1.5 text-gray-400 hover:text-white transition-colors"
+      >
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        </svg>
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-80 origin-top-right rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg z-50">
+          <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">Notifikasi</span>
+            <Link href="/notifications" className="text-xs text-indigo-600 hover:text-indigo-500" onClick={() => setOpen(false)}>Lihat Semua</Link>
+          </div>
+          {recentUnread.length > 0 ? (
+            <div className="max-h-60 overflow-y-auto">
+              {recentUnread.map((n) => (
+                <Link
+                  key={n.id}
+                  href={n.link || "#"}
+                  onClick={() => { markAsRead(n.id); setOpen(false); }}
+                  className="block px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-800 last:border-0"
+                >
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{n.title}</p>
+                  {n.message && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="p-6 text-center text-sm text-gray-400">
+              Tidak ada notifikasi baru
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
