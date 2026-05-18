@@ -1,6 +1,5 @@
-import { getServerSession } from "next-auth";
 import { redirect, notFound } from "next/navigation";
-import { authOptions } from "@/lib/auth-options";
+import { getServerUser } from "@/lib/auth-server";
 import { Navbar } from "@/components/navbar";
 import { CheckoutClient } from "./checkout-client";
 
@@ -38,14 +37,14 @@ async function getEnrollment(userId: string, courseId: string) {
 }
 
 export default async function CheckoutPage({ params }: PageProps) {
-  const session = await getServerSession(authOptions);
+  const user = await getServerUser();
 
-  if (!session?.user) {
+  if (!user) {
     redirect(`/auth/login?callbackUrl=/checkout/${(await params).courseId}`);
   }
 
   const { courseId } = await params;
-  const userId = (session.user as any).id || (session.user as any).pocketbaseId;
+  const userId = user.id;
 
   const course = await getCourse(courseId);
   if (!course) notFound();

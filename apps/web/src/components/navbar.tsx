@@ -1,11 +1,11 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 import { useState } from "react";
 
 export function Navbar() {
-  const { data: session } = useSession();
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -25,7 +25,7 @@ export function Navbar() {
             Jelajahi
           </Link>
 
-          {session ? (
+          {user ? (
             <>
               <Link
                 href="/my-learning"
@@ -43,7 +43,7 @@ export function Navbar() {
               {/* Profile dropdown */}
               <div className="relative group">
                 <button className="flex items-center gap-2 rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/70 transition-colors">
-                  <span>{session.user?.name || session.user?.email?.split("@")[0] || "User"}</span>
+                  <span>{user?.name || user?.email?.split("@")[0] || "User"}</span>
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                   </svg>
@@ -66,7 +66,7 @@ export function Navbar() {
                     </Link>
                     <hr className="my-1 border-gray-200 dark:border-gray-700" />
                     <button
-                      onClick={() => signOut({ callbackUrl: "/" })}
+                      onClick={() => { logout(); }}
                       className="block w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       Keluar
@@ -121,7 +121,7 @@ export function Navbar() {
             >
               Jelajahi
             </Link>
-            {session ? (
+            {user ? (
               <>
                 <Link
                   href="/my-learning"
@@ -153,7 +153,7 @@ export function Navbar() {
                 </Link>
                 <hr className="my-2 border-gray-200 dark:border-gray-700" />
                 <button
-                  onClick={() => { signOut({ callbackUrl: "/" }); setMobileMenuOpen(false); }}
+                  onClick={() => { logout(); setMobileMenuOpen(false); }}
                   className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   Keluar

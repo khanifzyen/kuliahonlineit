@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import PocketBase from "pocketbase";
-
-const POCKETBASE_URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+import { useAuth } from "@/lib/auth-context";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register } = useAuth();
 
   const [form, setForm] = useState({
     name: "",
@@ -38,39 +37,20 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const pb = new PocketBase(POCKETBASE_URL);
-      await pb.collection("users").create({
+      const result = await register({
         email: form.email,
         password: form.password,
         passwordConfirm: form.confirmPassword,
         name: form.name,
       });
 
-      // Registrasi berhasil → redirect ke halaman login
-      setSuccess(true);
-      setTimeout(() => {
-        router.push("/auth/login");
-      }, 1500);
-    } catch (err: unknown) {
-      const errObj = err as Record<string, unknown>;
-      const response = errObj?.response as Record<string, unknown> | undefined;
-      const data = response?.data as Record<string, unknown> | undefined;
-      const message =
-        typeof data?.message === "string"
-          ? data.message
-          : typeof errObj?.message === "string"
-            ? errObj.message
-            : "";
-
-      if (
-        message.toLowerCase().includes("duplicate") ||
-        message.toLowerCase().includes("already exists")
-      ) {
-        setError("Email sudah terdaftar. Silakan login.");
-      } else if (message.toLowerCase().includes("validation")) {
-        setError("Data tidak valid. Periksa kembali input Anda.");
+      if (result.ok) {
+        setSuccess(true);
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 1500);
       } else {
-        setError(`Gagal mendaftar: ${message || "Terjadi kesalahan"}`);
+        setError(result.error || "Gagal mendaftar");
       }
     } finally {
       setLoading(false);

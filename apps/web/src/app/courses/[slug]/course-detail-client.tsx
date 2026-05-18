@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -17,7 +17,7 @@ export function CourseDetailClient({
   sections,
   reviews,
 }: CourseDetailClientProps) {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(sections.length > 0 ? [sections[0]?.id] : [])
   );
@@ -158,7 +158,7 @@ export function CourseDetailClient({
                     <p className="text-3xl font-bold text-green-400">Gratis</p>
                   )}
 
-                  {session ? (
+                  {user ? (
                     <Link
                       href={`/checkout/${course.id}`}
                       className="mt-3 block w-full rounded-lg bg-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"

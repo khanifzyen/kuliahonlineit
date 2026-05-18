@@ -1,6 +1,5 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth-options";
+import { getServerUser } from "@/lib/auth-server";
 import { Navbar } from "@/components/navbar";
 import Link from "next/link";
 
@@ -20,14 +19,13 @@ async function getEnrollments(userId: string) {
 }
 
 export default async function MyLearningPage() {
-  const session = await getServerSession(authOptions);
+  const user = await getServerUser();
 
-  if (!session?.user) {
+  if (!user) {
     redirect("/auth/login?callbackUrl=/my-learning");
   }
 
-  const userId = (session.user as any).id || (session.user as any).pocketbaseId;
-  const enrollments = await getEnrollments(userId);
+  const enrollments = await getEnrollments(user.id);
 
   return (
     <div className="flex flex-col min-h-screen">

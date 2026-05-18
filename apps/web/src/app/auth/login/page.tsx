@@ -1,14 +1,15 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/my-learning";
+  const { login } = useAuth();
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -19,26 +20,13 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    try {
-      const result = await signIn("credentials", {
-        email: form.email,
-        password: form.password,
-        redirect: false,
-      });
+    const result = await login(form.email, form.password);
 
-      if (result?.error) {
-        setError(
-          result.error === "CredentialsSignin"
-            ? "Email atau password salah"
-            : "Terjadi kesalahan. Silakan coba lagi."
-        );
-      } else if (result?.ok) {
-        router.push(callbackUrl);
-        router.refresh();
-      }
-    } catch {
-      setError("Terjadi kesalahan. Silakan coba lagi.");
-    } finally {
+    if (result.ok) {
+      router.push(callbackUrl);
+      router.refresh();
+    } else {
+      setError(result.error || "Email atau password salah");
       setLoading(false);
     }
   }
@@ -96,36 +84,6 @@ function LoginForm() {
           >
             {loading ? "Memproses..." : "Masuk"}
           </button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-gray-700" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white dark:bg-gray-950 px-2 text-gray-500">Atau masuk dengan</span>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-              <button
-                type="button"
-                onClick={() => signIn("google", { callbackUrl })}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                Masuk dengan Google
-              </button>
-            )}
-            {process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID && (
-              <button
-                type="button"
-                onClick={() => signIn("github", { callbackUrl })}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                Masuk dengan GitHub
-              </button>
-            )}
-          </div>
         </form>
       </div>
     </div>
