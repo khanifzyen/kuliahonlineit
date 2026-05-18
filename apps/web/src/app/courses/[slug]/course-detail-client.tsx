@@ -1,6 +1,9 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import { useWishlist } from "@/lib/use-wishlist";
+import { ReviewForm } from "./review-form";
+import { QASection } from "./qa-section";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -18,6 +21,7 @@ export function CourseDetailClient({
   reviews,
 }: CourseDetailClientProps) {
   const { user } = useAuth();
+  const { isWishlisted, toggle: toggleWishlist, loading: wishlistLoading } = useWishlist(course.id);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(sections.length > 0 ? [sections[0]?.id] : [])
   );
@@ -174,6 +178,20 @@ export function CourseDetailClient({
                     </Link>
                   )}
 
+                  {user && (
+                    <button
+                      onClick={toggleWishlist}
+                      disabled={wishlistLoading}
+                      className={`mt-2 block w-full rounded-lg border px-4 py-2 text-center text-sm transition-colors ${
+                        isWishlisted
+                          ? "border-red-800 bg-red-900/20 text-red-300 hover:bg-red-900/40"
+                          : "border-gray-600 text-gray-300 hover:bg-gray-700"
+                      }`}
+                    >
+                      {isWishlisted ? "❤️ Tersimpan" : "🤍 Simpan ke Wishlist"}
+                    </button>
+                  )}
+
                   {freeLectures > 0 && (
                     <button
                       onClick={() => setShowPreview(!showPreview)}
@@ -313,11 +331,19 @@ export function CourseDetailClient({
             )}
 
             {/* Reviews */}
-            {reviews.length > 0 && (
-              <section>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                  Ulasan & Rating
-                </h2>
+            <section>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                Ulasan & Rating
+              </h2>
+
+              {/* Review form */}
+              {user && (
+                <div className="mt-4 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+                  <ReviewForm courseId={course.id} onReviewSubmitted={() => {}} />
+                </div>
+              )}
+
+              {reviews.length > 0 ? (
                 <div className="mt-4 space-y-4">
                   {reviews.map((review: any) => (
                     <div
@@ -358,8 +384,13 @@ export function CourseDetailClient({
                     </div>
                   ))}
                 </div>
-              </section>
-            )}
+              ) : (
+                <p className="mt-4 text-sm text-gray-400">Belum ada review. Jadilah yang pertama!</p>
+              )}
+            </section>
+
+            {/* Q&A */}
+            <QASection courseId={course.id} />
           </div>
 
           {/* Right Sidebar (spacer for desktop) */}

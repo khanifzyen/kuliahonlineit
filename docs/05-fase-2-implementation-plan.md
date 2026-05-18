@@ -21,33 +21,33 @@ Phase 1 (MVP) sudah selesai. Semua collection sudah termigrasi, auth berfungsi, 
 
 | # | Task | Test | Status |
 |---|------|------|--------|
-| 1.1 | **Review form** — Modal/section untuk tulis rating (1-5 bintang) + komentar | Render form, submit sukses | ⬜ |
-| 1.2 | **Submit review** — POST ke `reviews` collection via API | Record terbuat & unique constraint | ⬜ |
-| 1.3 | **Edit/Hapus review** — Hanya pemilik review yang bisa edit/hapus | Update & delete berhasil | ⬜ |
-| 1.4 | **Average rating** — Hitung ulang `average_rating` di course | Angka berubah setelah review baru | ⬜ |
-| 1.5 | **Cegah double review** — 1 user hanya bisa 1 review per course | Unique index `(student, course)` | ⬜ |
+| 1.1 | **Review form** — Form rating bintang + komentar di detail kursus | Render form, submit sukses | ✅ |
+| 1.2 | **Submit review** — POST ke `reviews` collection via API | Record terbuat | ✅ |
+| 1.3 | **Edit/Hapus review** — Hanya pemilik review | ⬅️ (future) | ⬜ |
+| 1.4 | **Average rating** — Hitung ulang `average_rating` | ⬅️ (future) | ⬜ |
+| 1.5 | **Cegah double review** — Unique index `(student, course)` | Error handling sudah | ✅ |
 
 ## 2. 💖 Wishlist
 
 | # | Task | Test | Status |
 |---|------|------|--------|
-| 2.1 | **Add to wishlist** — Tombol di halaman detail kursus | `wishlists` record terbuat | ⬜ |
-| 2.2 | **Remove from wishlist** — Tombol di halaman wishlist | Record terhapus | ⬜ |
-| 2.3 | **Halaman `/wishlist`** — List semua kursus yang di-wishlist | Render daftar + empty state | ⬜ |
-| 2.4 | **Wishlist badge** — Icon heart di navbar (jumlah wishlist) | Badge muncul jika ada | ⬜ |
-| 2.5 | **Move wishlist to checkout** — Tombol langsung checkout | Redirect ke `/checkout/[id]` | ⬜ |
+| 2.1 | **Add to wishlist** — Tombol di halaman detail kursus | `wishlists` record terbuat | ✅ |
+| 2.2 | **Remove from wishlist** — Tombol toggle di detail kursus | Record terhapus | ✅ |
+| 2.3 | **Halaman `/wishlist`** — List semua kursus + empty state | Render daftar | ✅ |
+| 2.4 | **Wishlist badge** — Icon heart di navbar | ⬅️ (nice to have) | ⬜ |
+| 2.5 | **Move wishlist to checkout** — Tombol langsung checkout | ⬅️ (Phase 2 saja) | ✅ |
 
 ## 3. 💬 Q&A Forum
 
 | # | Task | Test | Status |
 |---|------|------|--------|
-| 3.1 | **Buat thread** — Form pertanyaan di halaman detail/player | `qa_threads` record terbuat | ⬜ |
-| 3.2 | **List thread** — Daftar pertanyaan per kursus | Render list + pagination | ⬜ |
-| 3.3 | **Detail thread** — Lihat pertanyaan + jawaban | Render thread + answers | ⬜ |
-| 3.4 | **Jawab thread** — Form jawaban (student & instructor) | `qa_answers` record terbuat | ⬜ |
-| 3.5 | **Instructor badge** — Jawaban instructor ditandai | `is_instructor_reply` = true | ⬜ |
-| 3.6 | **Mark resolved** — Penanya tandai selesai | `is_resolved` = true | ⬜ |
-| 3.7 | **Filter Q&A** — Semua / belum terjawab / sudah terjawab | Filter berfungsi | ⬜ |
+| 3.1 | **Buat thread** — Form pertanyaan di halaman detail | ✅ |
+| 3.2 | **List thread** — Daftar pertanyaan per kursus | ✅ |
+| 3.3 | **Detail thread** — Lihat pertanyaan + jawaban (expandable) | ✅ |
+| 3.4 | **Jawab thread** — Form jawaban inline | ✅ |
+| 3.5 | **Instructor badge** — `is_instructor_reply` label | ✅ |
+| 3.6 | **Mark resolved** — Tombol tandai selesai | ✅ |
+| 3.7 | **Filter Q&A** — Semua / belum terjawab / sudah terjawab | ⬅️ (future) | ⬜ |
 
 ## 4. 📝 Catatan (Notes)
 
@@ -69,7 +69,7 @@ Phase 1 (MVP) sudah selesai. Semua collection sudah termigrasi, auth berfungsi, 
 | 5.4 | **Auto-enroll after payment** — Jika status success → buat enrollment | Enrollment terbuat | ⬜ |
 | 5.5 | **Halaman transaksi sukses** — Redirect setelah bayar | Tampilkan konfirmasi | ⬜ |
 | 5.6 | **Halaman transaksi gagal** — Jika payment failed | Tampilkan error + retry | ⬜ |
-| 5.7 | **Riwayat transaksi `/transactions`** — List semua transaksi user | Render list + empty state | ⬜ |
+| 5.7 | **Riwayat transaksi `/transactions`** — List semua transaksi user | Render list + empty state | ✅ |
 
 ## 6. 📜 Sertifikat Kelulusan
 
