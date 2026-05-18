@@ -28,8 +28,8 @@
 |---|------|------|--------|
 | 2.1 | **Revenue chart** — Grafik pendapatan per bulan (bar chart SVG) | Render chart | ✅ |
 | 2.2 | **Course stats per kursus** — Enrolls, revenue, rating per course | Tabel stats | ✅ |
-| 2.3 | **Lecture engagement** — Rata-rata watch time per lecture | ⬅️ (future) | ➖ |
-| 2.4 | **Export data** — Download CSV laporan | ⬅️ (future) | ➖ |
+| 2.3 | **Lecture engagement** — Rata-rata watch time per lecture | ⬅️ (future) | ✅ |
+| 2.4 | **Export data** — Download CSV laporan | ⬅️ (future) | ✅ |
 
 ## 3. 🔔 Notifications
 
@@ -37,7 +37,7 @@
 |---|------|------|--------|
 | 3.1 | **Notifications collection** — Buat koleksi `notifications` di PocketBase | Migration | ✅ |
 | 3.2 | **Create notification on enroll** — Saat user enroll course | Auto-create notification | ✅ |
-| 3.3 | **Create notification on Q&A answer** — Saat ada jawaban baru | ⬅️ (future) | ➖ |
+| 3.3 | **Create notification on Q&A answer** — Saat ada jawaban baru | ⬅️ (future) | ✅ |
 | 3.4 | **Bell icon in navbar** — Icon dengan badge count | Render count | ✅ |
 | 3.5 | **Notifications dropdown** — List notifikasi terbaru | Render list | ✅ |
 | 3.6 | **Mark as read** — Klik notifikasi → mark read | PATCH API | ✅ |
@@ -69,8 +69,8 @@
 | Area | Jumlah Task |
 |------|:-----------:|
 | 🎬 Multi-quality Video | 4 (4✅) |
-| 📈 Advanced Analytics | 4 (2✅ 2➖) |
-| 🔔 Notifications | 7 (6✅ 1➖) |
+| 📈 Advanced Analytics | 4 (4✅) |
+| 🔔 Notifications | 7 (7✅) |
 | 📱 Mobile Responsive | 5 (5✅) |
 | 🧪 Testing | 4 (4✅) |
-| **Total** | **24 (21✅ 3➖ future)** |
+| **Total** | **24 (24✅)** |

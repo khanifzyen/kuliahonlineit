@@ -80,29 +80,46 @@ export default function CurriculumPage() {
 
   // Lecture operations
   const [showLectureForm, setShowLectureForm] = useState<string | null>(null);
+  const [editingLectureId, setEditingLectureId] = useState<string | null>(null);
   const [lectureForm, setLectureForm] = useState({
     title: "", type: "video", video_url: "", article_content: "", resource_file: null as any,
     video_duration: 0, is_free_preview: false,
     sort_order: 0, is_published: true,
   });
 
-  function openLectureForm(sectionId: string) {
-    const section = sections.find((s: any) => s.id === sectionId);
-    setLectureForm({ ...lectureForm, sort_order: (section?.lectures?.length || 0) + 1, title: "" });
+  function openLectureForm(sectionId: string, lecture?: any) {
+    if (lecture) {
+      setLectureForm({
+        title: lecture.title || "", type: lecture.type || "video",
+        video_url: lecture.video_url || "", article_content: lecture.article_content || "",
+        video_duration: lecture.video_duration || 0, is_free_preview: lecture.is_free_preview || false,
+        sort_order: lecture.sort_order || 0, is_published: lecture.is_published ?? true,
+        resource_file: null,
+      });
+      setEditingLectureId(lecture.id);
+    } else {
+      const section = sections.find((s: any) => s.id === sectionId);
+      setLectureForm({ title: "", type: "video", video_url: "", article_content: "",
+        video_duration: 0, is_free_preview: false, sort_order: (section?.lectures?.length || 0) + 1, is_published: true,
+        resource_file: null });
+      setEditingLectureId(null);
+    }
     setShowLectureForm(sectionId);
   }
 
   async function addLecture(sectionId: string) {
     if (!lectureForm.title.trim()) return;
     const body: any = { section: sectionId, ...lectureForm };
-    if (body.resource_file) delete body.resource_file; // file upload berbeda
+    if (body.resource_file) delete body.resource_file;
 
-    const res = await fetch(`${PB}/api/collections/lectures/records`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) { setShowLectureForm(null); loadData(); }
+    const isEdit = !!editingLectureId;
+    const url = isEdit
+      ? `${PB}/api/collections/lectures/records/${editingLectureId}`
+      : `${PB}/api/collections/lectures/records`;
+    const method = isEdit ? "PATCH" : "POST";
+
+    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (res.ok) { setShowLectureForm(null); setEditingLectureId(null); loadData(); }
   }
 
   async function deleteLecture(lectureId: string) {
@@ -195,6 +212,7 @@ export default function CurriculumPage() {
                     <button onClick={() => toggleFreePreview(lec.id, lec.is_free_preview)} className={`text-xs px-1.5 py-0.5 rounded ${lec.is_free_preview ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "text-gray-400"}`}>
                       {lec.is_free_preview ? "Gratis" : "Berbayar"}
                     </button>
+                    <button onClick={() => openLectureForm(section.id, lec)} className="text-xs text-indigo-500 hover:text-indigo-400">Edit</button>
                     <button onClick={() => deleteLecture(lec.id)} className="text-xs text-red-500 hover:text-red-400">Hapus</button>
                   </div>
                 ))}

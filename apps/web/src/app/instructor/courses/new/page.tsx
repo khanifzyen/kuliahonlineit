@@ -98,6 +98,9 @@ export default function NewCoursePage() {
           <Field label="Deskripsi">
             <textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Deskripsi lengkap kursus..." className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm" />
           </Field>
+          <Field label="Thumbnail (upload via PocketBase admin UI)">
+            <p className="text-xs text-gray-400">Untuk upload thumbnail, gunakan PocketBase admin panel di <a href="http://localhost:8090/_/" target="_blank" className="text-indigo-500">http://localhost:8090/_/</a></p>
+          </Field>
         </Section>
 
         {/* Kategori & Level */}

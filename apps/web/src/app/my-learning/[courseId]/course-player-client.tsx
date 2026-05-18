@@ -241,6 +241,49 @@ export function CoursePlayerClient({
     if (videoEl) { videoEl.currentTime = seconds; videoEl.play(); }
   }, []);
 
+  // Auto-resume: restore last position on lecture change
+  useEffect(() => {
+    if (activeLecture && progress[activeLecture.id]?.last_position > 0) {
+      const videoEl = document.querySelector("video");
+      if (videoEl) {
+        const pos = progress[activeLecture.id].last_position;
+        // Wait for video metadata to load before seeking
+        const onMeta = () => { videoEl.currentTime = pos; videoEl.removeEventListener("loadedmetadata", onMeta); };
+        videoEl.addEventListener("loadedmetadata", onMeta);
+      }
+    }
+  }, [activeLecture]);
+
+  // Auto-resume: save position periodically
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl || !activeLecture || !enrollment) return;
+
+    let saveTimer: any = null;
+    const handleTimeUpdate = () => {
+      if (saveTimer) return;
+      saveTimer = setTimeout(async () => {
+        saveTimer = null;
+        const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+        const current = progress[activeLecture.id];
+        const pos = Math.floor(videoEl.currentTime);
+        if (current?.id) {
+          await fetch(pbUrl + "/api/collections/lecture_progress/records/" + current.id, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ last_position: pos }),
+          });
+        }
+      }, 5000); // Save every 5 seconds
+    };
+
+    videoEl.addEventListener("timeupdate", handleTimeUpdate);
+    return () => {
+      videoEl.removeEventListener("timeupdate", handleTimeUpdate);
+      if (saveTimer) clearTimeout(saveTimer);
+    };
+  }, [activeLecture, enrollment]);
+
   const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
 
   return (

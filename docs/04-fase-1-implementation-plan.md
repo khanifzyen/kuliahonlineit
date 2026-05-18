@@ -64,7 +64,7 @@
 | 4.4 | Free preview video | Tampilkan daftar lecture gratis | ✅ |
 | 4.5 | Instructor info | Profil instructor | ✅ |
 | 4.6 | Reviews & Rating | List ulasan + average rating | ✅ |
-| 4.7 | Wishlist button | Add/remove from wishlist | ⬅️ (Phase 2) |
+| 4.7 | Wishlist button | Add/remove from wishlist | ✅ (Phase 2) |
 | 4.8 | Price display & CTA | Harga + diskon + tombol beli/masuk | ✅ |
 | 4.9 | What you'll learn | Render HTML content | ✅ |
 | 4.10 | Requirements & target audience | Render HTML content | ✅ |
@@ -75,9 +75,9 @@
 |---|------|------|--------|
 | 5.1 | Halaman `/checkout/[courseId]` | Ringkasan pesanan | ✅ |
 | 5.2 | Input kupon | Apply coupon code | ✅ |
-| 5.3 | Midtrans Snap integration | Redirect ke Midtrans | ⬅️ (Phase 2) |
-| 5.4 | Midtrans callback handler | Update transaksi & enrollment | ⬅️ (Phase 2) |
-| 5.5 | Halaman sukses / failed | Redirect setelah bayar | ⬅️ (Phase 2) |
+| 5.3 | Midtrans Snap integration | Redirect ke Midtrans | ✅ (Phase 2) |
+| 5.4 | Midtrans callback handler | Update transaksi & enrollment | ✅ (Phase 2) |
+| 5.5 | Halaman sukses / failed | Redirect setelah bayar | ✅ (Phase 2) |
 | 5.6 | Riwayat transaksi `/transactions` | List transaksi user | ⬜ |
 | 5.7 | Daftar gratis (free course) | Enroll langsung tanpa bayar | ✅ |
 
@@ -98,7 +98,7 @@
 | 7.2 | Video player component (native HTML5) | Play, pause, seek | ✅ |
 | 7.3 | Sidebar kurikulum | Navigasi lecture + status centang | ✅ |
 | 7.4 | Lecture content (video/article) | Render sesuai tipe | ✅ |
-| 7.5 | Auto-resume | Lanjut dari posisi terakhir | ⬅️ (Phase 2) |
+| 7.5 | Auto-resume | Lanjut dari posisi terakhir | ✅ |
 | 7.6 | Mark complete | Tandai selesai (API call) | ✅ |
 | 7.7 | Progress tracking | Update `lecture_progress` via API | ✅ |
 | 7.8 | Download resource | Download file lecture | ✅ |

@@ -23,8 +23,8 @@ Phase 1 (MVP) sudah selesai. Semua collection sudah termigrasi, auth berfungsi, 
 |---|------|------|--------|
 | 1.1 | **Review form** — Form rating bintang + komentar di detail kursus | Render form, submit sukses | ✅ |
 | 1.2 | **Submit review** — POST ke `reviews` collection via API | Record terbuat | ✅ |
-| 1.3 | **Edit/Hapus review** — Hanya pemilik review | ⬅️ (future) | ⬜ |
-| 1.4 | **Average rating** — Hitung ulang `average_rating` | ⬅️ (future) | ⬜ |
+| 1.3 | **Edit/Hapus review** — Hanya pemilik review | ⬅️ (future) | ✅ |
+| 1.4 | **Average rating** — Hitung ulang `average_rating` | ⬅️ (future) | ✅ |
 | 1.5 | **Cegah double review** — Unique index `(student, course)` | Error handling sudah | ✅ |
 
 ## 2. 💖 Wishlist
@@ -34,7 +34,7 @@ Phase 1 (MVP) sudah selesai. Semua collection sudah termigrasi, auth berfungsi, 
 | 2.1 | **Add to wishlist** — Tombol di halaman detail kursus | `wishlists` record terbuat | ✅ |
 | 2.2 | **Remove from wishlist** — Tombol toggle di detail kursus | Record terhapus | ✅ |
 | 2.3 | **Halaman `/wishlist`** — List semua kursus + empty state | Render daftar | ✅ |
-| 2.4 | **Wishlist badge** — Icon heart di navbar | ⬅️ (nice to have) | ⬜ |
+| 2.4 | **Wishlist badge** — Icon heart di navbar | ⬅️ (nice to have) | ➖ |
 | 2.5 | **Move wishlist to checkout** — Tombol langsung checkout | ⬅️ (Phase 2 saja) | ✅ |
 
 ## 3. 💬 Q&A Forum
@@ -47,7 +47,7 @@ Phase 1 (MVP) sudah selesai. Semua collection sudah termigrasi, auth berfungsi, 
 | 3.4 | **Jawab thread** — Form jawaban inline | ✅ |
 | 3.5 | **Instructor badge** — `is_instructor_reply` label | ✅ |
 | 3.6 | **Mark resolved** — Tombol tandai selesai | ✅ |
-| 3.7 | **Filter Q&A** — Semua / belum terjawab / sudah terjawab | ⬅️ (future) | ⬜ |
+| 3.7 | **Filter Q&A** — Semua / belum terjawab / sudah terjawab | ⬅️ (future) | ✅ |
 
 ## 4. 📝 Catatan (Notes)
 
@@ -78,7 +78,7 @@ Phase 1 (MVP) sudah selesai. Semua collection sudah termigrasi, auth berfungsi, 
 | 6.1 | **Auto-generate certificate** — Saat semua lecture complete | ✅ |
 | 6.2 | **Nomor sertifikat unik** — Format CERT-COURSEID-USERID-TIMESTAMP | ✅ |
 | 6.3 | **Halaman `/certificates`** — Lihat semua sertifikat | ✅ |
-| 6.4 | **Download PDF** — Link ke certificate_url | ⬅️ (future: generate PDF) | ⬜ |
+| 6.4 | **Download PDF** — Link ke certificate_url | ⬅️ (future: generate PDF) | ➖ |
 
 ## 7. 🧪 Testing Phase 2
 

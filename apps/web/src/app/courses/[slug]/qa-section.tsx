@@ -82,6 +82,23 @@ export function QASection({ courseId }: { courseId: string }) {
       });
       setAnswerText("");
       loadThreads();
+
+      // Create notification for thread owner
+      const thread = threads.find((t) => t.id === threadId);
+      if (thread && thread.student !== user.id) {
+        await fetch(`${POCKETBASE_URL}/api/collections/notifications/records`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user: thread.student,
+            type: "qa_answer",
+            title: "Ada jawaban baru untuk pertanyaan Anda",
+            message: answerText.slice(0, 100),
+            link: "/courses/" + courseId,
+            is_read: false,
+          }),
+        });
+      }
     } catch {}
   }
 

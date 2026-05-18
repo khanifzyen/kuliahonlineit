@@ -26,6 +26,23 @@ export function CourseDetailClient({
     new Set(sections.length > 0 ? [sections[0]?.id] : [])
   );
   const [showPreview, setShowPreview] = useState(false);
+  const [localReviews, setLocalReviews] = useState(reviews);
+
+  const userReview = localReviews.find((r: any) => r.student === user?.id);
+
+  async function refreshReviews() {
+    const PB = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://localhost:8090";
+    try {
+      const res = await fetch(PB + "/api/collections/reviews/records?filter=" + encodeURIComponent('course="' + course.id + '"') + "&sort=-created&expand=student&perPage=10", { cache: "no-store" });
+      if (res.ok) { const d = await res.json(); setLocalReviews(d.items || []); }
+      // Update course average rating
+      await fetch(PB + "/api/collections/courses/records/" + course.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ average_rating: 0 }), // dummy to trigger recalc
+      });
+    } catch {}
+  }
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) => {
@@ -339,13 +356,13 @@ export function CourseDetailClient({
               {/* Review form */}
               {user && (
                 <div className="mt-4 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-                  <ReviewForm courseId={course.id} onReviewSubmitted={() => {}} />
+                  <ReviewForm courseId={course.id} existingReview={userReview} onReviewSubmitted={refreshReviews} />
                 </div>
               )}
 
-              {reviews.length > 0 ? (
+              {localReviews.length > 0 ? (
                 <div className="mt-4 space-y-4">
-                  {reviews.map((review: any) => (
+                  {localReviews.map((review: any) => (
                     <div
                       key={review.id}
                       className="rounded-xl border border-gray-200 dark:border-gray-800 p-4"
@@ -385,7 +402,7 @@ export function CourseDetailClient({
                   ))}
                 </div>
               ) : (
-                <p className="mt-4 text-sm text-gray-400">Belum ada review. Jadilah yang pertama!</p>
+                <p className="mt-4 text-sm text-gray-400">Belum ada review untuk kursus ini.</p>
               )}
             </section>
 

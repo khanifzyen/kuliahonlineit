@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth-server";
 import { Navbar } from "@/components/navbar";
 import { checkInstructor, formatCurrency } from "@/lib/instructor";
+import { getLectureEngagement } from "@/lib/analytics";
 import Link from "next/link";
 
 const PB = process.env.POCKETBASE_URL || "http://localhost:8090";
@@ -79,6 +80,7 @@ export default async function InstructorDashboardPage() {
   if (!isInstructor) redirect("/");
 
   const stats = await getStats(user.id);
+  const engagement = await getLectureEngagement(user.id);
 
   const maxRevenue = Math.max(...stats.monthlyRevenue.map((m) => m.total), 1);
 
@@ -197,6 +199,17 @@ export default async function InstructorDashboardPage() {
             )}
           </section>
 
+          {/* Lecture Engagement */}
+          <section className="rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Engagement Materi</h2>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div><span className="text-gray-500">Total Watch Time</span><p className="text-lg font-bold">{(engagement.totalWatchTime / 3600).toFixed(1)} jam</p></div>
+              <div><span className="text-gray-500">Rata-rata per Materi</span><p className="text-lg font-bold">{Math.round(engagement.avgWatchTimePerLecture / 60)} menit</p></div>
+              <div><span className="text-gray-500">Materi Terselesaikan</span><p className="text-lg font-bold">{engagement.watchedLectures} dari {engagement.totalProgress}</p></div>
+              <div><span className="text-gray-500">Total Enrollment</span><p className="text-lg font-bold">{engagement.totalEnrollments}</p></div>
+            </div>
+          </section>
+
           {/* Recent Reviews */}
           <section>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Ulasan Terbaru</h2>
@@ -225,6 +238,10 @@ export default async function InstructorDashboardPage() {
               <QuickLink href="/instructor/coupons" label="Kupon Diskon" icon="🏷️" />
               <QuickLink href="/instructor/courses/new" label="Buat Kursus" icon="➕" />
               <QuickLink href="/courses" label="Lihat Frontend" icon="👁️" />
+              <a href="/api/export" download className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 p-3 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                <span className="text-lg">📥</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Export CSV</span>
+              </a>
             </div>
           </section>
         </div>

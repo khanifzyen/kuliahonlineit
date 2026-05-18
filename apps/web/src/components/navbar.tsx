@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/use-notifications";
+import { useWishlist } from "@/lib/use-wishlist";
 import type { ServerUser } from "@/lib/auth-server";
 import Link from "next/link";
 

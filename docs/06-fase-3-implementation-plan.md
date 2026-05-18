@@ -25,7 +25,7 @@ Phase 1 & 2 sudah selesai. Instructor pages akan di-protect oleh proxy dan hanya
 | 1.2 | **Kursus Saya** — List semua kursus milik instructor | Fetch by instructor field | ✅ |
 | 1.3 | **Recent Reviews** — Ulasan terbaru dari siswa | Fetch reviews by course | ✅ |
 | 1.4 | **Recent Q&A** — Pertanyaan yang belum terjawab | Fetch unanswered threads | ✅ |
-| 1.5 | **Revenue chart** — Grafik pendapatan per bulan | ⬅️ (Phase 4) | ➖ |
+| 1.5 | **Revenue chart** — Grafik pendapatan per bulan | ⬅️ (Phase 4) | ✅ |
 
 ## 2. 📝 Manajemen Kursus (`/instructor/courses`)
 
@@ -64,7 +64,7 @@ Phase 1 & 2 sudah selesai. Instructor pages akan di-protect oleh proxy dan hanya
 | 5.2 | **Reorder sections** — Tombol naik/turun | Update sort_order | ✅ |
 | 5.3 | **List lectures per section** — Expandable | Fetch lectures by section | ✅ |
 | 5.4 | **Tambah lecture** — Form pilih tipe (video/article/resource) | CRUD lectures | ✅ |
-| 5.5 | **Edit lecture** — Edit judul, URL, konten, dll | ⬅️ (future) | ➖ |
+| 5.5 | **Edit lecture** — Edit judul, URL, konten, dll | ⬅️ (future) | ✅ |
 | 5.6 | **Delete lecture** — Hapus dengan konfirmasi | DELETE via API | ✅ |
 | 5.7 | **Set free preview** — Toggle per lecture | Update is_free_preview | ✅ |
 | 5.8 | **Reorder lectures** — Tombol naik/turun dalam section | Update sort_order | ✅ |
@@ -110,16 +110,16 @@ Phase 1 & 2 sudah selesai. Instructor pages akan di-protect oleh proxy dan hanya
 
 | Area | Jumlah Task |
 |------|:-----------:|
-| 📊 Dashboard | 5 (4✅ 1➖) |
+| 📊 Dashboard | 5 (5✅) |
 | 📝 Course Management | 3 (3✅) |
 | 🆕 Create Course | 7 (6✅ 1➖) |
 | ✏️ Edit Course | 4 (3✅ 1➖) |
-| 📚 Curriculum Builder | 8 (7✅ 1➖) |
+| 📚 Curriculum Builder | 8 (8✅) |
 | 📢 Announcements | 3 (3✅) |
 | 👥 Student List | 2 (2✅) |
 | 🏷️ Coupon Management | 4 (4✅) |
 | 🧪 Testing | 6 (6✅) |
-| **Total** | **42 (38✅ 4➖ future)** |
+| **Total** | **42 (40✅ 2➖ future)** |
 
 ---
 
