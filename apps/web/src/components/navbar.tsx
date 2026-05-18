@@ -86,6 +86,13 @@ export function Navbar({ user: serverUser }: NavbarProps) {
                       Sertifikat
                     </Link>
                     <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                    <Link
+                      href="/instructor/dashboard"
+                      className="block px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                      Instructor Mode
+                    </Link>
+                    <hr className="my-1 border-gray-200 dark:border-gray-700" />
                     <button
                       onClick={() => { handleLogout(); }}
                       className="block w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800"

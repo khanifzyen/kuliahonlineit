@@ -447,14 +447,16 @@ Perhitungan:
 | Riwayat Transaksi | ✅ Selesai | `/transactions` page with status badges |
 | Sertifikat | ✅ Selesai | Auto-generate on 100%, `/certificates` page |
 
-### 🚀 Phase 3: Instructor Tools — Prioritas Sedang
-| Fitur | Estimasi | Dependencies |
-|-------|----------|--------------|
-| Instructor Dashboard | ⬜ | Phase 1 |
-| Course Creator (CRUD) | ⬜ | Phase 1 |
-| Curriculum Builder | ⬜ | Phase 1 |
-| Coupon Management | ⬜ | Phase 1 |
-| Announcements | ⬜ | Phase 1 |
+### 🚀 Phase 3: Instructor Tools — ✅ Selesai
+| Fitur | Status | Notes |
+|-------|--------|-------|
+| Instructor Dashboard | ✅ Selesai | Overview cards, kursus list, recent Q&A, recent reviews |
+| Course Creator (CRUD) | ✅ Selesai | Create & edit form dengan kategori, harga, level, konten |
+| Curriculum Builder | ✅ Selesai | Section & lecture CRUD, reorder, free preview toggle |
+| Coupon Management | ✅ Selesai | Create, toggle active, delete, filter by course |
+| Announcements | ✅ Selesai | Create & hapus pengumuman per kursus |
+| Student List | ✅ Selesai | Table with progress bar, completion status |
+| Course List | ✅ Selesai | All courses with status badges & action buttons |
 
 ### 🚀 Phase 4: Growth — Prioritas Rendah
 | Fitur | Estimasi | Dependencies |
