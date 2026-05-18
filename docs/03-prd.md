@@ -422,16 +422,18 @@ Perhitungan:
 
 ## 10. Prioritas Pengembangan
 
-### 🚀 Phase 1: Foundation (MVP) — Prioritas Tertinggi
-| Fitur | Estimasi | Dependencies |
-|-------|----------|--------------|
-| Setup project (Next.js + PocketBase + Auth) | ✅ Selesai | - |
-| Database migration & collections | ✅ Selesai | PocketBase |
-| Autentikasi (Login, Register, OAuth) | 🔄 In Progress | NextAuth + PocketBase |
-| Halaman Home & Course Listing | ⬜ | - |
-| Halaman Detail Kursus | ⬜ | - |
-| Checkout & Midtrans Payment | ⬜ | Midtrans integration |
-| My Learning & Course Player | ⬜ | Video player |
+### 🚀 Phase 1: Foundation (MVP) — ✅ Selesai
+| Fitur | Status | Notes |
+|-------|--------|-------|
+| Setup project (Next.js + PocketBase + Docker) | ✅ Selesai | Monorepo Bun, PocketBase 0.38 |
+| Database migration & 15 collections | ✅ Selesai | Migrasi otomatis + seed 2 kursus |
+| Autentikasi (Login, Register, Forgot Password) | ✅ Selesai | PocketBase native auth, email verification |
+| Halaman Home & Course Listing | ✅ Selesai | Hero, kategori, filter, search, sort |
+| Halaman Detail Kursus | ✅ Selesai | Kurikulum, review, pricing CTA |
+| Checkout & Enroll | ✅ Selesai | Kupon, free enroll, paid placeholder |
+| My Learning & Course Player | ✅ Selesai | Video player, mark complete, sidebar |
+| Proxy middleware | ✅ Selesai | Next.js 16 proxy, PocketBase cookie |
+| Bun test runner | ✅ Selesai | bunfig.toml, @testing-library/react |
 
 ### 🚀 Phase 2: Interaksi — Prioritas Sedang
 | Fitur | Estimasi | Dependencies |
