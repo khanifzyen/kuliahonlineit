@@ -46,9 +46,10 @@ export default function RegisterPage() {
 
       if (result.ok) {
         setSuccess(true);
+        // Redirect ke login setelah 4 detik (biar user sempat baca pesan verifikasi)
         setTimeout(() => {
           router.push("/auth/login");
-        }, 1500);
+        }, 4000);
       } else {
         setError(result.error || "Gagal mendaftar");
       }
@@ -85,8 +86,18 @@ export default function RegisterPage() {
 
         {/* Success */}
         {success && (
-          <div className="rounded-lg bg-green-50 dark:bg-green-900/30 p-4 text-sm text-green-700 dark:text-green-400">
-            ✅ Registrasi berhasil! Mengarahkan ke halaman login...
+          <div className="rounded-lg bg-green-50 dark:bg-green-900/30 p-4 space-y-2">
+            <p className="text-sm font-medium text-green-700 dark:text-green-400">
+              ✅ Pendaftaran berhasil!
+            </p>
+            <p className="text-xs text-green-600 dark:text-green-300">
+              Kami telah mengirim email verifikasi ke <strong>{form.email}</strong>.
+              Silakan cek inbox (atau folder spam) Anda dan klik tautan verifikasi
+              sebelum login.
+            </p>
+            <p className="text-xs text-green-600 dark:text-green-300">
+              Mengarahkan ke halaman login dalam beberapa detik...
+            </p>
           </div>
         )}
 

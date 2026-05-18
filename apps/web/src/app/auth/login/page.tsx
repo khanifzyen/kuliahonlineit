@@ -9,15 +9,20 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/my-learning";
-  const { login } = useAuth();
+  const { login, requestVerification } = useAuth();
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [unverified, setUnverified] = useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setUnverified(false);
+    setVerificationSent(false);
     setLoading(true);
 
     const result = await login(form.email, form.password);
@@ -26,9 +31,26 @@ function LoginForm() {
       router.push(callbackUrl);
       router.refresh();
     } else {
-      setError(result.error || "Email atau password salah");
+      if (result.unverified) {
+        setUnverified(true);
+      } else {
+        setError(result.error || "Email atau password salah");
+      }
       setLoading(false);
     }
+  }
+
+  async function handleResendVerification() {
+    if (!form.email || sendingVerification) return;
+    setSendingVerification(true);
+    setVerificationSent(false);
+    const result = await requestVerification(form.email);
+    if (result.ok) {
+      setVerificationSent(true);
+    } else {
+      setError(result.error || "Gagal mengirim ulang email verifikasi");
+    }
+    setSendingVerification(false);
   }
 
   return (
@@ -47,9 +69,37 @@ function LoginForm() {
           </p>
         </div>
 
-        {error && (
+        {error && !unverified && (
           <div className="rounded-lg bg-red-50 dark:bg-red-900/30 p-4 text-sm text-red-700 dark:text-red-400">
             {error}
+          </div>
+        )}
+
+        {unverified && (
+          <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/30 p-4 space-y-3">
+            <div>
+              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                Email belum diverifikasi
+              </p>
+              <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
+                Silakan cek inbox (atau folder spam) email <strong>{form.email}</strong>
+                dan klik tautan verifikasi sebelum login.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={sendingVerification || verificationSent}
+                className="text-xs font-medium text-yellow-800 dark:text-yellow-200 underline hover:no-underline disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {sendingVerification
+                  ? "Mengirim..."
+                  : verificationSent
+                    ? "✓ Email verifikasi terkirim"
+                    : "Kirim ulang email verifikasi"}
+              </button>
+            </div>
           </div>
         )}
 

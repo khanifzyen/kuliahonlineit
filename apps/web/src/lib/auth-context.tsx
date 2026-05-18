@@ -16,10 +16,11 @@ interface AuthContextType {
   pb: PocketBase;
   user: RecordModel | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; unverified?: boolean }>;
   register: (data: { email: string; password: string; passwordConfirm: string; name: string }) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   refresh: () => Promise<void>;
+  requestVerification: (email: string) => Promise<{ ok: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -88,6 +89,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string) => {
       try {
         const { record } = await pb.collection("users").authWithPassword(email, password);
+
+        // Cek apakah email sudah diverifikasi
+        if (!record.verified) {
+          pb.authStore.clear(); // langsung logout karena blm verified
+          return { ok: false, error: "Email belum diverifikasi. Silakan cek email Anda.", unverified: true };
+        }
+
         setUser(record);
         return { ok: true };
       } catch (err: unknown) {
@@ -102,9 +110,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (data: { email: string; password: string; passwordConfirm: string; name: string }) => {
       try {
         await pb.collection("users").create(data);
+
+        // Minta kirim email verifikasi
+        try {
+          await pb.collection("users").requestVerification(data.email);
+        } catch {
+          // gagal kirim email bukan masalah fatal
+        }
+
         return { ok: true };
       } catch (err: unknown) {
         const msg = extractPbError(err) || "Gagal mendaftar";
+        return { ok: false, error: msg };
+      }
+    },
+    [pb]
+  );
+
+  const requestVerification = useCallback(
+    async (email: string) => {
+      try {
+        await pb.collection("users").requestVerification(email);
+        return { ok: true };
+      } catch (err: unknown) {
+        const msg = extractPbError(err) || "Gagal mengirim email verifikasi";
         return { ok: false, error: msg };
       }
     },
@@ -118,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [pb]);
 
   return (
-    <AuthContext.Provider value={{ pb, user, loading, login, register, logout, refresh }}>
+    <AuthContext.Provider value={{ pb, user, loading, login, register, logout, refresh, requestVerification }}>
       {children}
     </AuthContext.Provider>
   );
