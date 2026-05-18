@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import PocketBase from "pocketbase";
@@ -18,11 +17,13 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSuccess(false);
 
     if (form.password !== form.confirmPassword) {
       setError("Password dan konfirmasi password tidak cocok");
@@ -37,7 +38,6 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // Create user in PocketBase
       const pb = new PocketBase(POCKETBASE_URL);
       await pb.collection("users").create({
         email: form.email,
@@ -46,27 +46,31 @@ export default function RegisterPage() {
         name: form.name,
       });
 
-      // Auto-login after registration
-      const result = await signIn("credentials", {
-        email: form.email,
-        password: form.password,
-        redirect: false,
-      });
-
-      if (result?.ok) {
-        router.push("/my-learning");
-        router.refresh();
-      } else {
+      // Registrasi berhasil → redirect ke halaman login
+      setSuccess(true);
+      setTimeout(() => {
         router.push("/auth/login");
-      }
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || "";
-      if (message.includes("duplicate") || message.includes("already exists")) {
+      }, 1500);
+    } catch (err: unknown) {
+      const errObj = err as Record<string, unknown>;
+      const response = errObj?.response as Record<string, unknown> | undefined;
+      const data = response?.data as Record<string, unknown> | undefined;
+      const message =
+        typeof data?.message === "string"
+          ? data.message
+          : typeof errObj?.message === "string"
+            ? errObj.message
+            : "";
+
+      if (
+        message.toLowerCase().includes("duplicate") ||
+        message.toLowerCase().includes("already exists")
+      ) {
         setError("Email sudah terdaftar. Silakan login.");
-      } else if (message.includes("validation")) {
+      } else if (message.toLowerCase().includes("validation")) {
         setError("Data tidak valid. Periksa kembali input Anda.");
       } else {
-        setError("Terjadi kesalahan. Silakan coba lagi.");
+        setError(`Gagal mendaftar: ${message || "Terjadi kesalahan"}`);
       }
     } finally {
       setLoading(false);
@@ -96,6 +100,13 @@ export default function RegisterPage() {
         {error && (
           <div className="rounded-lg bg-red-50 dark:bg-red-900/30 p-4 text-sm text-red-700 dark:text-red-400">
             {error}
+          </div>
+        )}
+
+        {/* Success */}
+        {success && (
+          <div className="rounded-lg bg-green-50 dark:bg-green-900/30 p-4 text-sm text-green-700 dark:text-green-400">
+            ✅ Registrasi berhasil! Mengarahkan ke halaman login...
           </div>
         )}
 
@@ -173,10 +184,10 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || success}
             className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? "Memproses..." : "Daftar"}
+            {loading ? "Memproses..." : success ? "Berhasil!" : "Daftar"}
           </button>
 
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
