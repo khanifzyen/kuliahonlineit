@@ -125,6 +125,14 @@ function LoginForm() {
                 placeholder="Masukkan password"
               />
             </div>
+            <div className="flex justify-end">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+              >
+                Lupa password?
+              </Link>
+            </div>
           </div>
 
           <button
