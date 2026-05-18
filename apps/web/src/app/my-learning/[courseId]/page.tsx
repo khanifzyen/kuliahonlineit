@@ -116,7 +116,7 @@ export default async function CoursePlayerPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-950">
-      <Navbar />
+      <Navbar user={user} />
       <CoursePlayerClient
         course={course}
         sections={sectionsWithLectures}

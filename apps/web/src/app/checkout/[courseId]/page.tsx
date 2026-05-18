@@ -3,6 +3,7 @@ import { getServerUser } from "@/lib/auth-server";
 import { Navbar } from "@/components/navbar";
 import { CheckoutClient } from "./checkout-client";
 
+
 interface PageProps {
   params: Promise<{ courseId: string }>;
 }
@@ -57,7 +58,7 @@ export default async function CheckoutPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      <Navbar user={user} />
       <CheckoutClient course={course} userId={userId} />
     </div>
   );

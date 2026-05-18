@@ -1,12 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import type { ServerUser } from "@/lib/auth-server";
 import Link from "next/link";
-import { useState } from "react";
 
-export function Navbar() {
-  const { user, logout } = useAuth();
+interface NavbarProps {
+  /** Server-provided user for SSR hydration match (opsional) */
+  user?: ServerUser | null;
+}
+
+export function Navbar({ user: serverUser }: NavbarProps) {
+  const auth = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  // Pakai server user untuk SSR match, lalu switch ke client user setelah mount
+  const effectiveUser = mounted ? auth.user : (serverUser ?? null);
+  const handleLogout = auth.logout;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm">
@@ -25,7 +40,7 @@ export function Navbar() {
             Jelajahi
           </Link>
 
-          {user ? (
+          {effectiveUser ? (
             <>
               <Link
                 href="/my-learning"
@@ -43,7 +58,7 @@ export function Navbar() {
               {/* Profile dropdown */}
               <div className="relative group">
                 <button className="flex items-center gap-2 rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/70 transition-colors">
-                  <span>{user?.name || user?.email?.split("@")[0] || "User"}</span>
+                  <span>{effectiveUser?.name || effectiveUser?.email?.split("@")[0] || "User"}</span>
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                   </svg>
@@ -66,7 +81,7 @@ export function Navbar() {
                     </Link>
                     <hr className="my-1 border-gray-200 dark:border-gray-700" />
                     <button
-                      onClick={() => { logout(); }}
+                      onClick={() => { handleLogout(); }}
                       className="block w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       Keluar
@@ -121,7 +136,7 @@ export function Navbar() {
             >
               Jelajahi
             </Link>
-            {user ? (
+            {effectiveUser ? (
               <>
                 <Link
                   href="/my-learning"
@@ -153,7 +168,7 @@ export function Navbar() {
                 </Link>
                 <hr className="my-2 border-gray-200 dark:border-gray-700" />
                 <button
-                  onClick={() => { logout(); setMobileMenuOpen(false); }}
+                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                   className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   Keluar
