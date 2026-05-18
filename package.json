@@ -1,0 +1,22 @@
+{
+  "name": "kuliahonlineit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KuliahOnlineIT - Online Learning Platform (seperti Udemy)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "bun --filter web dev",
+    "dev:web": "bun --filter web dev",
+    "build": "bun --filter web build",
+    "lint": "bun --filter web lint",
+    "migrate": "bun --filter migrations start",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "trustedDependencies": [
+    "sharp"
+  ]
+}

@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.bun/
+bun.lock
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# PocketBase data
+pocketbase/data/
+pocketbase/public/
+
+# Build
+dist/
+.next/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
